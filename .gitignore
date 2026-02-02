@@ -1,0 +1,218 @@
+# ============================================================================
+# llamatelemetry v2.2.0 .gitignore
+# ============================================================================
+# Keep repo lightweight - no binaries, large files, or build artifacts
+# ============================================================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+dist/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Archive files - NEVER commit these
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.rar
+*.7z
+*.whl
+
+# Binary files
+*.so
+*.dylib
+*.dll
+*.exe
+*.bin
+
+# Large model files
+*.gguf
+*.ggml
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.pkl
+*.npz
+*.npy
+*.parquet
+*.arrow
+*.feather
+*.csv
+*.tsv
+
+# Build artifacts
+build/
+build-artifacts/
+release-packages/
+# Release tarballs are uploaded to GitHub Releases, not committed
+releases/**/*.tar.gz
+releases/**/*.sha256
+dist/
+*.egg-info/
+logs/
+
+# Test / coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.prof
+.hypothesis/
+.pytest_cache/
+test-output/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Local notebooks - personal/development notebooks (not for GitHub)
+notebooks-local/
+
+# Local assets - reference files not for GitHub
+llamatelemetry-assets/
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+*.code-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.log
+
+# Large media / exports
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+*.pdf
+
+# Old version files (v2.1.x and earlier) - archived, not committed
+archive/
+*v2.0*
+*v2.1.0*
+*v2.1.1*
+*v2.1.2*
+*_REPORT.md
+*_SUMMARY.md
+*_COMPLETE*.md
+*VERIFICATION*.md
+*VERIFICATION*.txt
+verify_binaries.py
+SEO_*.md
+colab_clean_install.py
+COLAB_*.md
+GOOGLE_COLAB_*.md
+
+# ============================================================================
+# DISTRIBUTION STRATEGY
+# ============================================================================
+# GitHub Repo:     Code only (~2 MB)
+# GitHub Releases: Binary packages (~961 MB for v2.2.0) - download on first import
+# ============================================================================
+
+# llamatelemetry runtime directories (downloaded on first import)
+llamatelemetry/lib/
+llamatelemetry/binaries/
+llamatelemetry/models/*.gguf
+
+
+# Executed notebooks - personal execution outputs
+notebooks-executed/
+
+# Local notebooks - personal/development notebooks (not for GitHub)
+notebooks-local/
+
+# Other notebooks practice - local practice files
+llamatelemetry-other-notebooks-practice/
+
+# ============================================================================
+# PORTFOLIO FOLDER - LaTeX build artifacts
+# ============================================================================
+# Allow portfolio PDF and source, but ignore LaTeX build artifacts
+llamatelemetry-pdf-portfolio/*.aux
+llamatelemetry-pdf-portfolio/*.log
+llamatelemetry-pdf-portfolio/*.out
+llamatelemetry-pdf-portfolio/*.toc
+llamatelemetry-pdf-portfolio/*.lof
+llamatelemetry-pdf-portfolio/*.lot
+llamatelemetry-pdf-portfolio/*.fls
+llamatelemetry-pdf-portfolio/*.fdb_latexmk
+llamatelemetry-pdf-portfolio/*.synctex.gz
+llamatelemetry-pdf-portfolio/*.bbl
+llamatelemetry-pdf-portfolio/*.blg
+llamatelemetry-pdf-portfolio/*.bcf
+llamatelemetry-pdf-portfolio/*.run.xml
+
+# ============================================================================
+# CLAUDE CHAT HISTORY - Personal AI assistant conversation logs
+# ============================================================================
+# Keep local chat history private (not for GitHub)
+claude-chat-history/

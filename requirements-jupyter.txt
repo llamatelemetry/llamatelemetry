@@ -1,0 +1,23 @@
+# llamatelemetry v0.3.0 - JupyterLab Features Dependencies
+
+# Core dependencies (always required)
+numpy>=1.20.0
+requests>=2.20.0
+
+# JupyterLab integration (recommended)
+ipywidgets>=7.6.0
+tqdm>=4.60.0
+IPython>=7.0.0
+
+# Visualization and metrics
+matplotlib>=3.5.0
+pandas>=1.3.0
+
+# Optional: Advanced features
+scikit-learn>=1.0.0        # For text clustering
+huggingface_hub>=0.10.0    # For model downloads
+gguf>=0.1.0                # For GGUF metadata parsing
+
+# Jupyter environment
+jupyterlab>=3.0.0
+notebook>=6.4.0

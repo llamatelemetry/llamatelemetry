@@ -1,0 +1,35 @@
+# MANIFEST.in for llamatelemetry v2.2.0
+
+# Documentation
+include README.md
+include LICENSE
+include CHANGELOG.md
+
+# Build metadata
+include pyproject.toml
+include setup.py
+
+# Python package files
+recursive-include llamatelemetry *.py
+recursive-include llamatelemetry/_internal *.py
+recursive-include llamatelemetry/core *.py
+recursive-include tests *.py
+
+# EXCLUDE binaries, libraries, models, and archives
+recursive-exclude llamatelemetry/binaries *
+recursive-exclude llamatelemetry/lib *
+recursive-exclude llamatelemetry/models *
+global-exclude *.gguf
+global-exclude *.tar.gz
+global-exclude *.so
+global-exclude *.so.*
+
+# Exclude unwanted files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude __pycache__
+global-exclude .DS_Store
+global-exclude .git*
+global-exclude *.swp
+global-exclude *.bak
+global-exclude *~
