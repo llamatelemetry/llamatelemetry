@@ -352,7 +352,7 @@ echo ""
 show_header "Step 8: Creating Test Scripts"
 
 # Create Python test script
-TEST_SCRIPT="${PROJECT_ROOT}/test_llcuda_integration.py"
+TEST_SCRIPT="${PROJECT_ROOT}/test_llamatelemetry_integration.py"
 cat > "$TEST_SCRIPT" << 'PYEOF'
 #!/usr/bin/env python3
 """

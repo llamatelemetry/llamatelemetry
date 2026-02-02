@@ -264,7 +264,7 @@ def test_xubuntu_specific_compatibility():
     manager = ServerManager()
     
     # Create a test binary path
-    test_dir = Path("/tmp/llcuda_test")
+    test_dir = Path("/tmp/llamatelemetry_test")
     test_dir.mkdir(exist_ok=True)
     test_bin_dir = test_dir / "bin"
     test_bin_dir.mkdir(exist_ok=True)

@@ -466,7 +466,7 @@ complete llama.cpp server API coverage, and advanced GGUF model utilities.
 - **Keywords**: Added multi-gpu, kaggle, nccl, openai-api
 
 ### Build
-- **Kaggle Build Notebook**: `notebooks/build_llcuda_v2_1_2_kaggle_t4x2.ipynb`
+- **Kaggle Build Notebook**: `notebooks/build_llamatelemetry_v2_1_2_kaggle_t4x2.ipynb`
   - Complete build script for Kaggle 2× T4
   - Builds with `-DCMAKE_CUDA_ARCHITECTURES="75"` for Turing
   - FlashAttention enabled for all quantization types
@@ -519,7 +519,7 @@ This major release introduces four powerful API modules that seamlessly integrat
   - `load_unsloth_model()`: Load models with 4-bit quantization support
   - `UnslothModelLoader`: Configurable loader with max_seq_length control
 - **GGUF Export**: Export fine-tuned models to GGUF with automatic LoRA merging
-  - `export_to_llcuda()`: One-line export from Unsloth to llamatelemetry
+  - `export_to_llamatelemetry()`: One-line export from Unsloth to llamatelemetry
   - `UnslothExporter`: Advanced export with quantization control
 - **LoRA Adapter Management**: Handle LoRA adapters efficiently
   - `merge_lora_adapters()`: Merge LoRA weights into base model
@@ -591,8 +591,8 @@ This major release introduces four powerful API modules that seamlessly integrat
 
 ### Added
 - **Comprehensive Gemma 3-1B Tutorial Notebook**: Added complete Google Colab tutorial demonstrating llamatelemetry v2.0.6 with Unsloth
-  - `notebooks/llcuda_v2_0_6_gemma3_1b_unsloth_colab.ipynb` - Full tutorial with 14 steps
-  - `notebooks/llcuda_v2_0_6_gemma3_1b_unsloth_colab_executed.ipynb` - Live execution output from Tesla T4
+  - `notebooks/llamatelemetry_v2_0_6_gemma3_1b_unsloth_colab.ipynb` - Full tutorial with 14 steps
+  - `notebooks/llamatelemetry_v2_0_6_gemma3_1b_unsloth_colab_executed.ipynb` - Live execution output from Tesla T4
   - Demonstrates GitHub installation, binary auto-download, model loading, and inference
   - Includes batch processing, performance metrics, and advanced generation examples
   - Documents complete Unsloth fine-tuning → llamatelemetry deployment workflow
@@ -656,7 +656,7 @@ This major release introduces four powerful API modules that seamlessly integrat
 ### Removed
 - Duplicate backup files (`__init___backup.py`, `__init___pure.py`)
 - Empty nested directory structure in `llamatelemetry/` package
-- Obsolete CMakeLists.txt and llcuda_py.cpp from package directory
+- Obsolete CMakeLists.txt and llamatelemetry_py.cpp from package directory
 - 15+ obsolete documentation files from v1.x era
 - Duplicate binary tarballs (kept single copy in release-packages)
 

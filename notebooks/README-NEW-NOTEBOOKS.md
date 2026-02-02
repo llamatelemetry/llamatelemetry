@@ -474,7 +474,7 @@ scikit-learn
 If you use these notebooks in your research or education:
 
 ```bibtex
-@software{llcuda_transformer_notebooks,
+@software{llamatelemetry_transformer_notebooks,
   title={llamatelemetry Transformer Visualization Notebooks},
   author={Your Name},
   year={2026},

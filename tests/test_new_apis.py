@@ -176,7 +176,7 @@ class TestAPIIntegration(unittest.TestCase):
         # Unsloth
         from unsloth import (
             load_unsloth_model,
-            export_to_llcuda,
+            export_to_llamatelemetry,
             merge_lora_adapters,
         )
 

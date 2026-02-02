@@ -17,8 +17,8 @@ Complete tutorial for using llamatelemetry v2.2.0 with Gemma 3-1B on Kaggle dual
 - Verified 134 tok/s on Tesla T4
 
 **Notebooks:**
-1. [llcuda_v2_1_0_gemma3_1b_unsloth_colab.ipynb](../notebooks/llcuda_v2_1_0_gemma3_1b_unsloth_colab.ipynb) - Tutorial notebook
-2. [llcuda_v2_1_0_gemma3_1b_unsloth_colab_executed.ipynb](../notebooks/llcuda_v2_1_0_gemma3_1b_unsloth_colab_executed.ipynb) - Executed with results
+1. [llamatelemetry_v2_1_0_gemma3_1b_unsloth_colab.ipynb](../notebooks/llamatelemetry_v2_1_0_gemma3_1b_unsloth_colab.ipynb) - Tutorial notebook
+2. [llamatelemetry_v2_1_0_gemma3_1b_unsloth_colab_executed.ipynb](../notebooks/llamatelemetry_v2_1_0_gemma3_1b_unsloth_colab_executed.ipynb) - Executed with results
 
 **Recommended Runtime:**
 - Python 3.11+

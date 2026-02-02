@@ -229,7 +229,7 @@ class UnslothExporter:
             self.export(model, tokenizer, gguf_path, config)
 
 
-def export_to_llcuda(
+def export_to_llamatelemetry(
     model: Any,
     tokenizer: Any,
     output_path: Union[str, Path],
@@ -254,7 +254,7 @@ def export_to_llcuda(
     Example:
         >>> from unsloth import FastLanguageModel
         >>> model, tokenizer = FastLanguageModel.from_pretrained("my_model")
-        >>> export_to_llcuda(model, tokenizer, "model.gguf")
+        >>> export_to_llamatelemetry(model, tokenizer, "model.gguf")
     """
     config = ExportConfig(
         quant_type=quant_type,
@@ -274,7 +274,7 @@ def export_to_gguf(
     **kwargs,
 ) -> Path:
     """
-    Alias for export_to_llcuda (for compatibility).
+    Alias for export_to_llamatelemetry (for compatibility).
 
     Args:
         model: Model to export
@@ -286,4 +286,4 @@ def export_to_gguf(
     Returns:
         Path to exported file
     """
-    return export_to_llcuda(model, tokenizer, output_path, quant_type, **kwargs)
+    return export_to_llamatelemetry(model, tokenizer, output_path, quant_type, **kwargs)

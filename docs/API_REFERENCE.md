@@ -7,10 +7,10 @@ Complete Python API documentation for llamatelemetry.
 ## Table of Contents
 
 - [Core Modules](#core-modules)
-- [llamatelemetry.server](#llcudaserver)
-- [llamatelemetry.api.client](#llcudaapiclient)
-- [llamatelemetry.api.gguf](#llcudaapigguf)
-- [llamatelemetry.api.multigpu](#llcudaapimultigpu)
+- [llamatelemetry.server](#llamatelemetryserver)
+- [llamatelemetry.api.client](#llamatelemetryapiclient)
+- [llamatelemetry.api.gguf](#llamatelemetryapigguf)
+- [llamatelemetry.api.multigpu](#llamatelemetryapimultigpu)
 - [Data Classes](#data-classes)
 - [Exceptions](#exceptions)
 

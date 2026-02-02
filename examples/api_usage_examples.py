@@ -86,10 +86,10 @@ def example_unsloth_integration():
 
     # Export to GGUF
     print("\n B) Export to GGUF")
-    from llamatelemetry.unsloth import export_to_llcuda
+    from llamatelemetry.unsloth import export_to_llamatelemetry
 
     print("   Export syntax:")
-    print("   export_to_llcuda(model, tokenizer, 'model.gguf', quant_type='Q4_K_M')")
+    print("   export_to_llamatelemetry(model, tokenizer, 'model.gguf', quant_type='Q4_K_M')")
 
     # LoRA Adapter Management
     print("\n C) LoRA Adapter Management")
@@ -209,8 +209,8 @@ def example_complete_workflow():
     # ... training ...
 
     # 2. Export to GGUF
-    from llamatelemetry.unsloth import export_to_llcuda
-    export_to_llcuda(model, tokenizer, "model.gguf", quant_type="Q4_K_M")
+    from llamatelemetry.unsloth import export_to_llamatelemetry
+    export_to_llamatelemetry(model, tokenizer, "model.gguf", quant_type="Q4_K_M")
 
     # 3. Deploy with llamatelemetry
     import llamatelemetry

@@ -671,9 +671,9 @@ debug_info = {
 # llamatelemetry info
 try:
     import llamatelemetry
-    debug_info["llcuda_version"] = llamatelemetry.__version__
+    debug_info["llamatelemetry_version"] = llamatelemetry.__version__
 except:
-    debug_info["llcuda_version"] = "not installed"
+    debug_info["llamatelemetry_version"] = "not installed"
 
 # Server logs
 try:

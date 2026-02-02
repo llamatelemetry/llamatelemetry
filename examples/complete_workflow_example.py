@@ -18,7 +18,7 @@ Workflow:
 """
 
 import llamatelemetry
-from llamatelemetry.unsloth import export_to_llcuda
+from llamatelemetry.unsloth import export_to_llamatelemetry
 from llamatelemetry.quantization import quantize_dynamic
 from llamatelemetry.cuda import enable_tensor_cores, check_tensor_core_support
 import torch
@@ -108,7 +108,7 @@ def export_model_to_gguf(model, tokenizer):
     print(f"\n Exporting to {output_path}")
     print("  Quantization: Q4_K_M (recommended for Tesla T4)")
 
-    export_to_llcuda(
+    export_to_llamatelemetry(
         model=model,
         tokenizer=tokenizer,
         output_path=output_path,
@@ -125,7 +125,7 @@ def export_model_to_gguf(model, tokenizer):
 # PART 3: Deploy with llamatelemetry
 # ============================================================================
 
-def deploy_with_llcuda(model_path):
+def deploy_with_llamatelemetry(model_path):
     """Deploy model with llamatelemetry for fast inference."""
     print("\n" + "=" * 70)
     print("PART 3: Deploy with llamatelemetry")
@@ -273,7 +273,7 @@ def main():
     model_path = export_model_to_gguf(model, tokenizer)
 
     # Part 3: Deploy with llamatelemetry
-    engine = deploy_with_llcuda(model_path)
+    engine = deploy_with_llamatelemetry(model_path)
 
     # Part 4: Run inference
     run_optimized_inference(engine)

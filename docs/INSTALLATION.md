@@ -292,7 +292,7 @@ print(f"CLI args: {config.to_cli_args()}")
 ### Full System Check
 
 ```python
-def verify_llcuda():
+def verify_llamatelemetry():
     """Complete llamatelemetry verification."""
     checks = []
     
@@ -333,7 +333,7 @@ def verify_llcuda():
     return checks
 
 # Run verification
-for name, status, info in verify_llcuda():
+for name, status, info in verify_llamatelemetry():
     icon = "✅" if status else "❌"
     print(f"{icon} {name}: {info}")
 ```

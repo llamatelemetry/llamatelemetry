@@ -11,11 +11,11 @@ This module enables the complete workflow:
 
 Example:
     >>> from unsloth import FastLanguageModel
-    >>> from llamatelemetry.unsloth import export_to_llcuda
+    >>> from llamatelemetry.unsloth import export_to_llamatelemetry
     >>>
     >>> # After training with Unsloth
     >>> model, tokenizer = FastLanguageModel.from_pretrained("your_model")
-    >>> export_to_llcuda(model, tokenizer, "model.gguf", quant_type="Q4_K_M")
+    >>> export_to_llamatelemetry(model, tokenizer, "model.gguf", quant_type="Q4_K_M")
     >>>
     >>> # Deploy with llamatelemetry
     >>> import llamatelemetry
@@ -30,7 +30,7 @@ from .loader import (
 )
 
 from .exporter import (
-    export_to_llcuda,
+    export_to_llamatelemetry,
     export_to_gguf,
     UnslothExporter,
     ExportConfig,
@@ -50,7 +50,7 @@ __all__ = [
     'check_unsloth_available',
 
     # Exporter
-    'export_to_llcuda',
+    'export_to_llamatelemetry',
     'export_to_gguf',
     'UnslothExporter',
     'ExportConfig',
