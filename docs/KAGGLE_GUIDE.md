@@ -587,3 +587,26 @@ See the complete tutorial series in [`notebooks/`](../notebooks/):
 - **[Installation Guide](INSTALLATION.md)** - Detailed installation
 - **[Configuration Guide](CONFIGURATION.md)** - All configuration options
 - **[API Reference](API_REFERENCE.md)** - Complete API documentation
+
+## Kaggle Install + Verify (Recommended)
+
+```python
+# Install llamatelemetry v0.1.0 from GitHub (force fresh install, no cache)
+print("📦 Installing llamatelemetry v0.1.0...")
+!pip install -q --no-cache-dir --force-reinstall git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+
+# Verify installation
+import llamatelemetry
+print(f"\n✅ llamatelemetry {llamatelemetry.__version__} installed!")
+
+# Check llamatelemetry status using available APIs
+from llamatelemetry import check_cuda_available, get_cuda_device_info
+from llamatelemetry.api.multigpu import gpu_count
+
+cuda_info = get_cuda_device_info()
+print(f"\n📊 llamatelemetry Status:")
+print(f"   CUDA Available: {check_cuda_available()}")
+print(f"   GPUs: {gpu_count()}")
+if cuda_info:
+    print(f"   CUDA Version: {cuda_info.get('cuda_version', 'N/A')}")
+```
