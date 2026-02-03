@@ -444,6 +444,6 @@ llamatelemetry v0.1.0 is Kaggle-specific with large binary dependencies (961 MB)
 
 After installation:
 
-1. **[Quick Start Guide](../QUICK_START.md)** - Get started in 5 minutes
+1. **[Quick Start Guide](guides/QUICK_START.md)** - Get started in 5 minutes
 2. **[Configuration Guide](CONFIGURATION.md)** - Server and client options
 3. **[Tutorial Notebooks](../notebooks/README.md)** - Step-by-step tutorials

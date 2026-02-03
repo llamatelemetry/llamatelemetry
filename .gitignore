@@ -217,3 +217,9 @@ llamatelemetry-pdf-portfolio/*.run.xml
 # ============================================================================
 # Keep local chat history private (not for GitHub)
 claude-chat-history/
+# Local HF auth usage (avoid accidental commits)
+scripts/huggingface/create_org_binaries_repo.py
+scripts/huggingface/upload_to_huggingface.py
+scripts/huggingface/upload_to_llamatelemetry_org.py
+scripts/huggingface/upload_to_org_huggingface.py
+docs/huggingface/add_admin_to_org.md

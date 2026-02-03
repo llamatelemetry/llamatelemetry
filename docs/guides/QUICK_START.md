@@ -158,7 +158,7 @@ server.start_server(
 
 - 📓 **[Notebook 01](notebooks/01-quickstart-llamatelemetry-v0.1.0.ipynb)** - Complete quickstart on Kaggle
 - 📓 **[Notebook 11](notebooks/11-gguf-neural-network-graphistry-visualization.ipynb)** - GGUF visualization
-- 📖 **[Full Documentation](README.md)** - All features and guides
+- 📖 **[Full Documentation](../../README.md)** - All features and guides
 - 🔗 **[GitHub Releases](https://github.com/llamatelemetry/llamatelemetry/releases)** - Download binaries
 
 ## Kaggle Install + Verify (Recommended)

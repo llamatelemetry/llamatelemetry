@@ -130,7 +130,7 @@ server.start_server(
 # See Notebook 11 for complete visualization workflow
 ```
 
-📘 **[Quick Start Guide →](QUICK_START.md)** | 📓 **[Notebook 01 →](notebooks/01-quickstart-llamatelemetry-v0.1.0.ipynb)**
+📘 **[Quick Start Guide →](docs/guides/QUICK_START.md)** | 📓 **[Notebook 01 →](notebooks/01-quickstart-llamatelemetry-v0.1.0.ipynb)**
 
 ---
 
@@ -413,8 +413,8 @@ GPU 1 Available:
 ### Core Documentation
 | Document | Description |
 |----------|-------------|
-| [QUICK_START.md](QUICK_START.md) | Get started in 5 minutes |
-| [INSTALL.md](INSTALL.md) | Detailed installation guide |
+| [QUICK_START.md](docs/guides/QUICK_START.md) | Get started in 5 minutes |
+| [INSTALL.md](docs/guides/INSTALL.md) | Detailed installation guide |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 ### In-Depth Guides

@@ -35,6 +35,26 @@ llamatelemetry v0.1.0 is a CUDA 12-first inference stack for **Kaggle dual Tesla
 
 ---
 
+## Project Guides (organized)
+
+- `guides/QUICK_START.md` — end-user quick start
+- `guides/INSTALL.md` — install details (short form)
+- `guides/KAGGLE_INSTALL_GUIDE.md` — Kaggle-specific install flow
+
+## HuggingFace Setup + Ops
+
+- `huggingface/HUGGINGFACE_WAQASM86_SETUP_COMPLETE.md` — primary setup summary
+- `huggingface/HUGGINGFACE_SETUP_INSTRUCTIONS.md` — org setup steps
+- `huggingface/llamatelemetry_org_card.md` — organization card content
+
+## Reports + Reference
+
+- `reports/DEPLOYMENT_SUMMARY.md` — deployment status
+- `reports/UPLOAD_VERIFICATION_REPORT.md` — upload verification
+- `reference/LLAMATELEMETRY_QUICK_REFERENCE.md` — quick links
+
+---
+
 ## Notebooks
 
 - `notebooks/README.md` — 13-notebook tutorial path
