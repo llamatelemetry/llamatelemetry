@@ -193,6 +193,8 @@ notebooks-local/
 
 # Other notebooks practice - local practice files
 llamatelemetry-other-notebooks-practice/
+# Kaggle execution outputs
+llamatelemetry-kaggle-executions/
 
 # ============================================================================
 # PORTFOLIO FOLDER - LaTeX build artifacts

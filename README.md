@@ -9,6 +9,11 @@
 
 **CUDA-first OpenTelemetry Python SDK for LLM inference observability and explainability.**
 
+Also known as **Llama Telemetry** or **llama telemetry**.
+
+GitHub org: `https://github.com/llamatelemetry/`  
+GitHub repo: `https://github.com/llamatelemetry/llamatelemetry/`
+
 llamatelemetry provides GPU-native telemetry for quantized LLM inference pipelines, integrating multi-GPU execution (NCCL), GGUF/llama.cpp runtimes, and real-time graph-based introspection via pygraphistry.
 
 **Designed for production deployments, llamatelemetry enables:**

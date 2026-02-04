@@ -90,7 +90,7 @@ all = [
 
 [project.urls]
 Homepage = "https://github.com/llamatelemetry/llamatelemetry"
-Documentation = "https://waqasm86.github.io/"
+Documentation = "https://llamatelemetry.github.io/"
 Repository = "https://github.com/llamatelemetry/llamatelemetry"
 "Bug Tracker" = "https://github.com/llamatelemetry/llamatelemetry/issues"
 Changelog = "https://github.com/llamatelemetry/llamatelemetry/blob/main/CHANGELOG.md"
