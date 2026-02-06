@@ -432,8 +432,18 @@ class ServerManager:
             "cache_ram": "--cache-ram",
             "fit": "-fit",
         }
+        # Flags that should be passed without a value
+        flag_only = {
+            "embeddings",
+            "embedding",
+        }
 
         for key, value in kwargs.items():
+            if key in flag_only:
+                if value is True:
+                    cmd.append("--embeddings")
+                # If value is False/None, skip the flag entirely
+                continue
             if key.startswith("-"):
                 # Already formatted parameter
                 cmd.extend([key, str(value)])
