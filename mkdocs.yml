@@ -1,20 +1,100 @@
 site_name: llamatelemetry
+site_description: CUDA-first OpenTelemetry Python SDK for LLM inference observability
+site_author: Waqas Muhammad
 site_url: https://llamatelemetry.readthedocs.io/
 repo_url: https://github.com/llamatelemetry/llamatelemetry
-edit_uri: blob/main/
+repo_name: llamatelemetry/llamatelemetry
+edit_uri: blob/main/docs/
+
+# Copyright
+copyright: Copyright &copy; 2026 Waqas Muhammad
 
 docs_dir: docs
+site_dir: site
 
+# Theme configuration
+theme:
+  name: material
+  language: en
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.details
+  - admonition
+  - tables
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+
+# Navigation
 nav:
   - Home: index.md
-  - Quick Start: QUICK_START_GUIDE.md
-  - Installation: INSTALLATION.md
-  - Architecture: ARCHITECTURE.md
-  - Integration: INTEGRATION_GUIDE.md
-  - Configuration: CONFIGURATION.md
-  - Troubleshooting: TROUBLESHOOTING.md
-  - API Reference: API_REFERENCE.md
-  - Quick Reference: QUICK_REFERENCE.md
-  - Kaggle Guide: KAGGLE_GUIDE.md
-  - GGUF Guide: GGUF_GUIDE.md
-  - Notebooks Guide: NOTEBOOKS_GUIDE.md
+  - Getting Started:
+      - Installation: INSTALLATION.md
+      - Quick Start: QUICK_START_GUIDE.md
+      - Kaggle Guide: KAGGLE_GUIDE.md
+  - Core Documentation:
+      - Architecture: ARCHITECTURE.md
+      - Configuration: CONFIGURATION.md
+      - Integration Guide: INTEGRATION_GUIDE.md
+      - API Reference: API_REFERENCE.md
+  - Guides:
+      - Notebooks Guide: NOTEBOOKS_GUIDE.md
+      - GGUF Guide: GGUF_GUIDE.md
+      - Quick Reference: QUICK_REFERENCE.md
+  - Advanced:
+      - Build Guide: BUILD_GUIDE.md
+      - GGUF Neural Network Visualization: GGUF_NEURAL_NETWORK_VISUALIZATION.md
+  - Help:
+      - Troubleshooting: TROUBLESHOOTING.md
+      - GitHub Releases: GITHUB_RELEASE_GUIDE.md
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+
+# Extra
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/llamatelemetry/llamatelemetry
+  version:
+    provider: mike
