@@ -1,7 +1,7 @@
 site_name: llamatelemetry
-site_description: CUDA-first OpenTelemetry Python SDK for LLM inference observability
+site_description: llamatelemetry is a CUDA-first OpenTelemetry Python SDK for LLM inference observability and GPU telemetry with llama.cpp GGUF and NCCL multi-GPU workflows
 site_author: Waqas Muhammad
-site_url: https://llamatelemetry.readthedocs.io/
+site_url: https://llamatelemetry.github.io/llamatelemetry/
 repo_url: https://github.com/llamatelemetry/llamatelemetry
 repo_name: llamatelemetry/llamatelemetry
 edit_uri: blob/main/docs/
@@ -103,6 +103,9 @@ nav:
 plugins:
   - search:
       lang: en
+  - sitemap:
+      changefreq: weekly
+      priority: 0.6
 
 # Extra
 extra:
