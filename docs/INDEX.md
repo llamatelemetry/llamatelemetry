@@ -3,7 +3,6 @@
 This index is the single source of truth for all docs in this repo.
 
 ## Start Here
-- `docs/index.md`
 - `docs/INSTALLATION.md`
 - `docs/QUICK_START_GUIDE.md`
 - `docs/NOTEBOOKS_GUIDE.md`

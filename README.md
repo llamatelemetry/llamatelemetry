@@ -5,7 +5,6 @@
 llamatelemetry is a CUDA-first OpenTelemetry Python SDK for LLM inference observability and GPU telemetry built around llama.cpp GGUF and NCCL multi-GPU workflows.
 
 Official repository: https://github.com/llamatelemetry/llamatelemetry  
-Documentation: https://llamatelemetry.github.io/llamatelemetry/
 
 llamatelemetry combines:
 - **llama.cpp GGUF inference** - High-performance quantized model inference
