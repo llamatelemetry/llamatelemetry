@@ -1,4 +1,4 @@
-# llamatelemetry v0.3.0 - JupyterLab Features Dependencies
+# llamatelemetry v0.1.0 - JupyterLab Features Dependencies
 
 # Core dependencies (always required)
 numpy>=1.20.0

@@ -117,8 +117,8 @@ The binary bundle contains:
 | Platform | GPU | CUDA | Status |
 |----------|-----|------|--------|
 | Kaggle Notebooks | 2× Tesla T4 (SM 7.5) | 12.5 | ✅ Supported |
-| Google Colab | Tesla T4 (SM 7.5) | 12.x | 🔄 Planned (v0.2.0) |
-| Local Workstation | Tesla T4, RTX 4000+ | 12.x+ | 🔄 Planned (v0.2.0) |
+| Google Colab | Tesla T4 (SM 7.5) | 12.x | 🔄 Planned |
+| Local Workstation | Tesla T4, RTX 4000+ | 12.x+ | 🔄 Planned |
 | Other GPUs | SM < 7.5 | Any | ❌ Not supported |
 
 ## 📄 License

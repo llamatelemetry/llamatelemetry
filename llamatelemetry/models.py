@@ -762,7 +762,7 @@ def print_registry_models(vram_gb: Optional[float] = None):
 
 
 # ============================================================================
-# Smart Model Downloader with VRAM Validation (v0.2.0+)
+# Smart Model Downloader with VRAM Validation
 # ============================================================================
 
 class SmartModelDownloader:

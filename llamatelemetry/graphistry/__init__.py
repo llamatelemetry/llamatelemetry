@@ -66,7 +66,7 @@ __all__ = [
     'register_graphistry',
     'plot_graph',
 
-    # High-level visualization (v0.2.0+)
+    # High-level visualization
     'GraphistryViz',
     'TraceVisualization',
     'MetricsVisualization',

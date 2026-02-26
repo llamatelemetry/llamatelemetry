@@ -141,7 +141,7 @@ def setup_telemetry(
     return tracer, meter
 
 
-# New v0.2.0+ modules
+# Additional telemetry modules
 from .auto_instrument import (
     instrument_inference,
     inference_span,
@@ -169,19 +169,19 @@ __all__ = [
     "is_graphistry_available",
     "get_metrics_collector",
 
-    # Auto-instrumentation (v0.2.0+)
+    # Auto-instrumentation
     "instrument_inference",
     "inference_span",
     "batch_inference_span",
     "create_llm_attributes",
     "annotate_span_from_result",
 
-    # Client instrumentor (v0.2.0+)
+    # Client instrumentor
     "LlamaCppClientInstrumentor",
     "instrument_llamacpp_client",
     "uninstrument_llamacpp_client",
 
-    # Performance monitor (v0.2.0+)
+    # Performance monitor
     "PerformanceSnapshot",
     "InferenceRecord",
     "PerformanceMonitor",
