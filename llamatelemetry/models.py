@@ -759,3 +759,250 @@ def print_registry_models(vram_gb: Optional[float] = None):
         print(f"   \n   Usage: engine.load_model('{name}')")
 
     print("\n" + "=" * 80)
+
+
+# ============================================================================
+# Smart Model Downloader with VRAM Validation (v0.2.0+)
+# ============================================================================
+
+class SmartModelDownloader:
+    """
+    Smart model downloader with VRAM validation and quantization recommendations.
+
+    Replaces manual size estimation and validation:
+
+    Before:
+        model_path = hf_hub_download(...)
+        size_gb = os.path.getsize(model_path) / (1024**3)
+        if size_gb > 15: print("Won't fit on single T4")
+
+    After:
+        downloader = SmartModelDownloader(vram_gb=15.0)
+        model_path = downloader.download("gemma-3-12b-Q4_K_M")  # Warns if too large
+
+    Example:
+        >>> downloader = SmartModelDownloader()
+        >>>
+        >>> # Validate before downloading
+        >>> result = downloader.validate_model("gemma-3-12b-Q4_K_M")
+        >>> if not result["fits"]:
+        ...     print(f"Try: {result['alternative_models']}")
+        >>>
+        >>> # Download with validation
+        >>> path = downloader.download("gemma-3-4b-Q4_K_M")
+    """
+
+    def __init__(
+        self,
+        vram_gb: Optional[float] = None,
+        cache_dir: Optional[Path] = None,
+        auto_recommend: bool = True
+    ):
+        """
+        Initialize smart model downloader.
+
+        Args:
+            vram_gb: Available VRAM (auto-detected if None)
+            cache_dir: Model cache directory (auto-detected if None)
+            auto_recommend: Suggest alternative quantization if model too large
+        """
+        self.vram_gb = vram_gb
+        self.cache_dir = cache_dir
+        self.auto_recommend = auto_recommend
+
+        if self.vram_gb is None:
+            self._detect_vram()
+
+        if self.cache_dir is None:
+            from . import _MODEL_CACHE
+            self.cache_dir = _MODEL_CACHE
+
+    def _detect_vram(self):
+        """Auto-detect available VRAM."""
+        try:
+            from .api.multigpu import get_free_vram
+            self.vram_gb = get_free_vram() / (1024**3)
+        except Exception:
+            self.vram_gb = 0.0
+
+    def validate_model(self, model_name: str) -> Dict[str, Any]:
+        """
+        Validate if model fits in VRAM.
+
+        Args:
+            model_name: Model name from registry or identifier
+
+        Returns:
+            Dict with 'fits', 'model_size_mb', 'recommended_quantization', etc.
+
+        Example:
+            >>> result = downloader.validate_model("gemma-3-12b-Q4_K_M")
+            >>> print(f"Fits: {result['fits']}")
+            >>> print(f"Estimated VRAM: {result['estimated_vram_gb']:.1f} GB")
+        """
+        from ._internal.registry import MODEL_REGISTRY
+
+        result = {
+            "fits": False,
+            "model_name": model_name,
+            "model_size_mb": 0,
+            "estimated_vram_gb": 0.0,
+            "available_vram_gb": self.vram_gb or 0.0,
+            "recommended_quantization": None,
+            "alternative_models": [],
+            "warning": None,
+        }
+
+        if model_name in MODEL_REGISTRY:
+            info = MODEL_REGISTRY[model_name]
+            result["model_size_mb"] = info.get("size_mb", 0)
+            result["estimated_vram_gb"] = info.get("min_vram_gb", 0) * 1.2  # 20% overhead
+
+            if self.vram_gb:
+                result["fits"] = result["estimated_vram_gb"] <= self.vram_gb
+
+                if not result["fits"] and self.auto_recommend:
+                    # Find smaller versions of same model family
+                    base_parts = model_name.split("-")
+                    if len(base_parts) >= 2:
+                        base_name = "-".join(base_parts[:2])  # e.g., "gemma-3"
+
+                        alternatives = [
+                            name for name in MODEL_REGISTRY
+                            if name.startswith(base_name) and
+                            MODEL_REGISTRY[name].get("min_vram_gb", float('inf')) <= self.vram_gb
+                        ]
+
+                        # Sort by quality (larger is better, up to VRAM limit)
+                        alternatives = sorted(
+                            alternatives,
+                            key=lambda n: MODEL_REGISTRY[n].get("size_mb", 0),
+                            reverse=True
+                        )
+
+                        result["alternative_models"] = alternatives[:3]
+
+                        if not result["fits"]:
+                            result["warning"] = (
+                                f"Model requires ~{result['estimated_vram_gb']:.1f} GB VRAM "
+                                f"but only {self.vram_gb:.1f} GB available"
+                            )
+        else:
+            result["warning"] = f"Model '{model_name}' not found in registry"
+
+        return result
+
+    def download(
+        self,
+        model_name_or_path: str,
+        force: bool = False,
+        warn_on_large: bool = True,
+        interactive: bool = True
+    ) -> Optional[Path]:
+        """
+        Download model with VRAM validation.
+
+        Args:
+            model_name_or_path: Model name or path
+            force: Download even if too large
+            warn_on_large: Print warning if model may not fit
+            interactive: Ask for confirmation
+
+        Returns:
+            Path to downloaded model, or None if cancelled
+
+        Example:
+            >>> path = downloader.download("gemma-3-4b-Q4_K_M")
+            >>> if path:
+            ...     print(f"Downloaded to: {path}")
+        """
+        # Validate first
+        validation = self.validate_model(model_name_or_path)
+
+        if not validation["fits"] and warn_on_large and self.vram_gb:
+            print(f"\n{'='*60}")
+            print(f"WARNING: Model may not fit in available VRAM")
+            print(f"{'='*60}")
+            print(f"  Model: {model_name_or_path}")
+            print(f"  Estimated VRAM needed: {validation['estimated_vram_gb']:.1f} GB")
+            print(f"  Available VRAM: {validation['available_vram_gb']:.1f} GB")
+
+            if validation["alternative_models"]:
+                print(f"\n  Recommended alternatives:")
+                for alt in validation["alternative_models"]:
+                    print(f"    - {alt}")
+
+            if interactive and not force:
+                response = input("\nContinue anyway? [y/N]: ").strip().lower()
+                if response not in ["y", "yes"]:
+                    print("Download cancelled.")
+                    return None
+
+        # Proceed with download
+        return load_model_smart(
+            model_name_or_path,
+            cache_dir=self.cache_dir,
+            interactive=interactive,
+            force_download=force
+        )
+
+    def get_recommendations(
+        self,
+        max_size_gb: Optional[float] = None,
+        min_quality: str = "Q4_K_M"
+    ) -> List[Dict[str, Any]]:
+        """
+        Get recommended models based on available VRAM.
+
+        Args:
+            max_size_gb: Maximum model size (default: auto from VRAM)
+            min_quality: Minimum quantization quality
+
+        Returns:
+            List of recommended model info dicts
+        """
+        from ._internal.registry import MODEL_REGISTRY
+
+        if max_size_gb is None:
+            max_size_gb = (self.vram_gb or 8.0) * 0.7  # 70% of VRAM
+
+        max_size_mb = max_size_gb * 1024
+
+        recommendations = []
+        for name, info in MODEL_REGISTRY.items():
+            if info.get("size_mb", float('inf')) <= max_size_mb:
+                recommendations.append({
+                    "name": name,
+                    "size_mb": info.get("size_mb", 0),
+                    "size_gb": info.get("size_mb", 0) / 1024,
+                    "min_vram_gb": info.get("min_vram_gb", 0),
+                    "description": info.get("description", ""),
+                    "repo": info.get("repo", ""),
+                })
+
+        # Sort by size (larger = higher quality)
+        recommendations = sorted(
+            recommendations,
+            key=lambda x: x["size_mb"],
+            reverse=True
+        )
+
+        return recommendations[:10]  # Top 10
+
+    def __repr__(self) -> str:
+        return f"SmartModelDownloader(vram_gb={self.vram_gb:.1f})"
+
+
+# Module exports
+__all__ = [
+    "ModelInfo",
+    "ModelManager",
+    "SmartModelDownloader",
+    "list_models",
+    "download_model",
+    "load_model_smart",
+    "list_registry_models",
+    "print_registry_models",
+    "get_model_recommendations",
+    "print_model_catalog",
+]

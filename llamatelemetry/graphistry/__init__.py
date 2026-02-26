@@ -41,6 +41,13 @@ from .connector import (
     plot_graph,
 )
 
+from .viz import (
+    GraphistryViz,
+    TraceVisualization,
+    MetricsVisualization,
+    create_graph_viz,
+)
+
 __all__ = [
     # Workload management
     'GraphWorkload',
@@ -58,4 +65,10 @@ __all__ = [
     'GraphistryConnector',
     'register_graphistry',
     'plot_graph',
+
+    # High-level visualization (v0.2.0+)
+    'GraphistryViz',
+    'TraceVisualization',
+    'MetricsVisualization',
+    'create_graph_viz',
 ]

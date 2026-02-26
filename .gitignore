@@ -69,6 +69,7 @@ build/
 build-artifacts/
 release-packages/
 # Release tarballs are uploaded to GitHub Releases, not committed
+releases/
 releases/**/*.tar.gz
 releases/**/*.sha256
 releases/**/extracted/
@@ -157,6 +158,8 @@ desktop.ini
 
 # Old version files (v2.1.x and earlier) - archived, not committed
 archive/
+**/archive/
+**/archived/
 *v2.0*
 *v2.1.0*
 *v2.1.1*
@@ -213,6 +216,8 @@ site/
 # ============================================================================
 # PORTFOLIO FOLDER - LaTeX build artifacts
 # ============================================================================
+# Entire portfolio folder should stay local
+llamatelemetry-pdf-portfolio/
 # Allow portfolio PDF and source, but ignore LaTeX build artifacts
 llamatelemetry-pdf-portfolio/*.aux
 llamatelemetry-pdf-portfolio/*.log

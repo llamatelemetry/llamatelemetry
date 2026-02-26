@@ -141,9 +141,48 @@ def setup_telemetry(
     return tracer, meter
 
 
+# New v0.2.0+ modules
+from .auto_instrument import (
+    instrument_inference,
+    inference_span,
+    batch_inference_span,
+    create_llm_attributes,
+    annotate_span_from_result,
+)
+
+from .instrumentor import (
+    LlamaCppClientInstrumentor,
+    instrument_llamacpp_client,
+    uninstrument_llamacpp_client,
+)
+
+from .monitor import (
+    PerformanceSnapshot,
+    InferenceRecord,
+    PerformanceMonitor,
+)
+
 __all__ = [
+    # Core setup
     "setup_telemetry",
     "is_otel_available",
     "is_graphistry_available",
     "get_metrics_collector",
+
+    # Auto-instrumentation (v0.2.0+)
+    "instrument_inference",
+    "inference_span",
+    "batch_inference_span",
+    "create_llm_attributes",
+    "annotate_span_from_result",
+
+    # Client instrumentor (v0.2.0+)
+    "LlamaCppClientInstrumentor",
+    "instrument_llamacpp_client",
+    "uninstrument_llamacpp_client",
+
+    # Performance monitor (v0.2.0+)
+    "PerformanceSnapshot",
+    "InferenceRecord",
+    "PerformanceMonitor",
 ]

@@ -206,6 +206,8 @@ __all__ = [
     "inference",
     # OpenTelemetry observability (v2.2+)
     "telemetry",
+    # Kaggle zero-boilerplate setup (v0.2.0+)
+    "kaggle",
 ]
 
 
