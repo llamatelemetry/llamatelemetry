@@ -31,13 +31,13 @@ endif()
 # ============================================================================
 
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
-    message(STATUS "llamatelemetry v2.0 - Targeting Tesla T4 (SM 7.5)")
+    message(STATUS "llamatelemetry v0.1.0 - Targeting Tesla T4 (SM 7.5)")
     set(CMAKE_CUDA_ARCHITECTURES "75")
 else()
     message(STATUS "Using user-specified CUDA architecture: ${CMAKE_CUDA_ARCHITECTURES}")
     # Verify SM 7.5+ for optimal performance
     if(CMAKE_CUDA_ARCHITECTURES LESS 75)
-        message(WARNING "llamatelemetry v2.0 is optimized for SM 7.5+ (Tensor Cores + FlashAttention)")
+        message(WARNING "llamatelemetry v0.1.0 is optimized for SM 7.5+ (Tensor Cores + FlashAttention)")
         message(WARNING "Your architecture: SM ${CMAKE_CUDA_ARCHITECTURES}")
         message(WARNING "Recommended: Tesla T4, RTX 20xx+, A100, H100")
     endif()

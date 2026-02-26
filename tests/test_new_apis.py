@@ -1,7 +1,7 @@
 """
-Unit tests for llamatelemetry v2.1+ APIs
+Unit tests for llamatelemetry v0.1.0 APIs
 
-Tests all new quantization, unsloth, cuda, and inference APIs.
+Tests quantization, unsloth, cuda, and inference APIs.
 """
 
 import unittest

@@ -33,7 +33,7 @@ NC='\033[0m'
 PROJECT_ROOT="/media/waqasm86/External1/Project-Nvidia"
 LLAMA_CPP_DIR="${PROJECT_ROOT}/llama.cpp"
 OUTPUT_DIR="${PROJECT_ROOT}/release-packages"
-VERSION="1.2.0"  # Update this for each release
+VERSION="0.1.0"  # Update this for each release
 
 ################################################################################
 # Functions

@@ -1,5 +1,5 @@
 """
-GGUF Parser for llamatelemetry v2.0
+GGUF Parser for llamatelemetry v0.1.0
 
 Parses GGUF (GGML Universal Format) model files with zero-copy memory mapping.
 

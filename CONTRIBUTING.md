@@ -442,15 +442,15 @@ We use semantic versioning: `MAJOR.MINOR.PATCH`
 
 ```bash
 # Update version
-# pyproject.toml: version = "2.3.0"
+# pyproject.toml: version = "0.1.0"
 
 # Update changelog
-# Add release notes under ## [2.3.0] - YYYY-MM-DD
+# Add release notes under ## [0.1.0] - YYYY-MM-DD
 
 # Commit and tag
 git add pyproject.toml CHANGELOG.md
-git commit -m "chore: release v2.3.0"
-git tag v2.3.0
+git commit -m "chore: release v0.1.0"
+git tag v0.1.0
 git push origin main --tags
 ```
 
