@@ -854,7 +854,7 @@ class ChatCompletionsAPI:
     def create(
         self,
         messages: List[Dict[str, Any]],
-        model: str = "gpt-3.5-turbo",
+        model: str = "gpt-codex-5.3",
         max_tokens: Optional[int] = None,
         temperature: float = 1.0,
         top_p: float = 1.0,

@@ -199,6 +199,9 @@ llamatelemetry-other-notebooks-practice/
 # Kaggle execution outputs
 llamatelemetry-kaggle-executions/
 
+# Local chat history
+codex-chat-histroy/
+
 # Downloaded models directory
 models/
 
