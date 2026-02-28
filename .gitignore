@@ -105,6 +105,9 @@ notebooks-local/
 # Local assets - reference files not for GitHub
 llamatelemetry-assets/
 
+# Personal notes (local only)
+notes/
+
 # Environments
 .env
 .venv
