@@ -102,6 +102,9 @@ class PresetConfig:
         flash_attention: Enable flash attention
         use_mmap: Use memory-mapped files
         n_parallel: Number of parallel sequences
+        enable_metrics: Enable llama.cpp /metrics endpoint
+        enable_props: Enable llama.cpp /props endpoint
+        enable_slots: Enable llama.cpp /slots endpoint
     """
     name: str
     server_url: str = "http://127.0.0.1:8080"
@@ -126,6 +129,11 @@ class PresetConfig:
     # Parallel processing
     n_parallel: int = 1
 
+    # Observability endpoints
+    enable_metrics: bool = True
+    enable_props: bool = True
+    enable_slots: bool = True
+
     def to_load_kwargs(self) -> Dict[str, Any]:
         """
         Convert to kwargs for InferenceEngine.load_model().
@@ -139,6 +147,9 @@ class PresetConfig:
             "batch_size": self.batch_size,
             "ubatch_size": self.ubatch_size,
             "n_parallel": self.n_parallel,
+            "enable_metrics": self.enable_metrics,
+            "enable_props": self.enable_props,
+            "enable_slots": self.enable_slots,
         }
 
         if self.tensor_split:

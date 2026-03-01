@@ -173,6 +173,79 @@ class ServerManager:
         except requests.exceptions.RequestException:
             return False
 
+    def get_health(self, timeout: float = 2.0) -> Dict[str, Any]:
+        """
+        Get detailed health status from llama-server.
+
+        Args:
+            timeout: Request timeout in seconds
+
+        Returns:
+            Health response JSON (or status info if unavailable)
+        """
+        try:
+            response = requests.get(f"{self.server_url}/health", timeout=timeout)
+            if response.status_code == 503:
+                return {"status": "loading"}
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException:
+            return {"status": "unavailable"}
+
+    def wait_ready(self, timeout: float = 60.0, interval: float = 1.0) -> bool:
+        """
+        Wait for llama-server to become ready.
+
+        Args:
+            timeout: Max seconds to wait
+            interval: Seconds between checks
+
+        Returns:
+            True if ready, False on timeout
+        """
+        start_time = time.time()
+        while time.time() - start_time < timeout:
+            if self.check_server_health(timeout=1.0):
+                return True
+            time.sleep(interval)
+        return False
+
+    def get_slots(self, timeout: float = 5.0) -> Any:
+        """Fetch slot status from llama-server."""
+        try:
+            response = requests.get(f"{self.server_url}/slots", timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_metrics(self, timeout: float = 5.0) -> Optional[str]:
+        """Fetch Prometheus metrics text from llama-server."""
+        try:
+            response = requests.get(f"{self.server_url}/metrics", timeout=timeout)
+            response.raise_for_status()
+            return response.text
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_models(self, timeout: float = 5.0) -> Any:
+        """Fetch loaded models list (OpenAI-compatible)."""
+        try:
+            response = requests.get(f"{self.server_url}/v1/models", timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException:
+            return None
+
+    def get_props(self, timeout: float = 5.0) -> Any:
+        """Fetch server properties (/props)."""
+        try:
+            response = requests.get(f"{self.server_url}/props", timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException:
+            return None
+
     def _detect_platform(self):
         """
         Detect the current platform (kaggle or local).
@@ -316,6 +389,11 @@ class ServerManager:
         verbose: bool = True,
         skip_gpu_check: bool = False,
         silent: bool = False,
+        multi_gpu_config: Optional[Any] = None,
+        nccl_config: Optional[Any] = None,
+        enable_metrics: bool = False,
+        enable_props: bool = False,
+        enable_slots: bool = True,
         **kwargs,
     ) -> bool:
         """
@@ -334,6 +412,11 @@ class ServerManager:
             verbose: Print status messages (default: True)
             skip_gpu_check: Skip GPU compatibility check (default: False)
             silent: Suppress all llama-server output (default: False)
+            multi_gpu_config: Optional MultiGPUConfig for multi-GPU inference
+            nccl_config: Optional NCCLConfig to apply env settings
+            enable_metrics: Enable /metrics endpoint (default: False)
+            enable_props: Enable /props endpoint (default: False)
+            enable_slots: Enable /slots endpoint (default: True)
             **kwargs: Additional server arguments (flash_attn, cache_ram, fit, etc.)
 
         Returns:
@@ -382,6 +465,89 @@ class ServerManager:
                 print(f"✓ llama-server already running at {self.server_url}")
             return True
 
+        # Apply optional NCCL configuration (env vars)
+        if nccl_config is not None:
+            try:
+                nccl_config.apply_env()
+            except Exception:
+                pass
+
+            # Default main GPU from NCCL config if not explicitly set
+            try:
+                if "main_gpu" not in kwargs and getattr(nccl_config, "gpu_ids", None):
+                    kwargs["main_gpu"] = nccl_config.gpu_ids[0]
+            except Exception:
+                pass
+
+        # Apply multi-GPU configuration (llama.cpp args)
+        if multi_gpu_config is not None:
+            try:
+                config_gpu_layers = getattr(multi_gpu_config, "n_gpu_layers", None)
+                if config_gpu_layers is not None and (gpu_layers == 99 or gpu_layers is None):
+                    gpu_layers = config_gpu_layers
+            except Exception:
+                pass
+
+            if "main_gpu" not in kwargs:
+                try:
+                    kwargs["main_gpu"] = getattr(multi_gpu_config, "main_gpu", 0)
+                except Exception:
+                    pass
+
+            if "split_mode" not in kwargs:
+                try:
+                    split_mode = getattr(multi_gpu_config, "split_mode", None)
+                    if split_mode is not None:
+                        kwargs["split_mode"] = getattr(split_mode, "value", split_mode)
+                except Exception:
+                    pass
+
+            if "tensor_split" not in kwargs:
+                try:
+                    tensor_split = getattr(multi_gpu_config, "tensor_split", None)
+                    if tensor_split:
+                        kwargs["tensor_split"] = tensor_split
+                except Exception:
+                    pass
+
+            if not getattr(multi_gpu_config, "use_mmap", True):
+                kwargs.setdefault("no_mmap", True)
+            if getattr(multi_gpu_config, "use_mlock", False):
+                kwargs.setdefault("mlock", True)
+
+            if "flash_attn" not in kwargs:
+                try:
+                    kwargs["flash_attn"] = bool(getattr(multi_gpu_config, "flash_attention", True))
+                except Exception:
+                    pass
+
+            if getattr(multi_gpu_config, "no_kv_offload", False):
+                kwargs.setdefault("kv_offload", False)
+
+            if ctx_size in (0, None):
+                try:
+                    cfg_ctx = getattr(multi_gpu_config, "ctx_size", 0)
+                    if cfg_ctx:
+                        ctx_size = cfg_ctx
+                except Exception:
+                    pass
+
+            if batch_size in (0, None):
+                try:
+                    cfg_batch = getattr(multi_gpu_config, "batch_size", 0)
+                    if cfg_batch:
+                        batch_size = cfg_batch
+                except Exception:
+                    pass
+
+            if ubatch_size in (0, None):
+                try:
+                    cfg_ubatch = getattr(multi_gpu_config, "ubatch_size", 0)
+                    if cfg_ubatch:
+                        ubatch_size = cfg_ubatch
+                except Exception:
+                    pass
+
         # Find llama-server executable
         if self._server_path is None:
             self._server_path = self.find_llama_server()
@@ -426,32 +592,141 @@ class ServerManager:
             str(ubatch_size),
         ]
 
+        # Enable observability endpoints (if requested)
+        if enable_metrics:
+            cmd.append("--metrics")
+        if enable_props:
+            cmd.append("--props")
+        if not enable_slots:
+            cmd.append("--no-slots")
+
         # Add additional arguments with proper parameter mapping
         param_map = {
             "flash_attn": "-fa",
             "cache_ram": "--cache-ram",
             "fit": "-fit",
+            "main_gpu": "--main-gpu",
+            "split_mode": "--split-mode",
+            "tensor_split": "--tensor-split",
+            "no_mmap": "--no-mmap",
+            "mlock": "--mlock",
+            "numa": "--numa",
+            "threads": "--threads",
+            "threads_batch": "--threads-batch",
+            "ctx_size": "--ctx-size",
+            "n_predict": "--n-predict",
+            "predict": "--predict",
+            "batch_size": "--batch-size",
+            "ubatch_size": "--ubatch-size",
+            "rope_scaling": "--rope-scaling",
+            "rope_scale": "--rope-scale",
+            "rope_freq_base": "--rope-freq-base",
+            "rope_freq_scale": "--rope-freq-scale",
+            "cache_type_k": "--cache-type-k",
+            "cache_type_v": "--cache-type-v",
+            "device": "--device",
+            "override_tensor": "--override-tensor",
+            "fit_target": "--fit-target",
+            "fit_ctx": "--fit-ctx",
+            "lora": "--lora",
+            "lora_scaled": "--lora-scaled",
+            "control_vector": "--control-vector",
+            "control_vector_scaled": "--control-vector-scaled",
+            "control_vector_layer_range": "--control-vector-layer-range",
+            "model": "--model",
+            "model_url": "--model-url",
+            "hf_repo": "--hf-repo",
+            "hf_token": "--hf-token",
+            "log_file": "--log-file",
+            "log_colors": "--log-colors",
+            "log_verbosity": "--log-verbosity",
+            "lookup_cache_static": "--lookup-cache-static",
+            "lookup_cache_dynamic": "--lookup-cache-dynamic",
+            "ctx_checkpoints": "--ctx-checkpoints",
+            "pooling": "--pooling",
+            "parallel": "--parallel",
+            "reverse_prompt": "--reverse-prompt",
+            "mmproj": "--mmproj",
+            "mmproj_url": "--mmproj-url",
+            "image_min_tokens": "--image-min-tokens",
+            "image_max_tokens": "--image-max-tokens",
+            "alias": "--alias",
+            "tags": "--tags",
+            "path": "--path",
+            "api_prefix": "--api-prefix",
+            "webui_config": "--webui-config",
+            "webui_config_file": "--webui-config-file",
+            "api_key": "--api-key",
+            "api_key_file": "--api-key-file",
+            "ssl_key_file": "--ssl-key-file",
+            "ssl_cert_file": "--ssl-cert-file",
+            "ssl_ca_file": "--ssl-ca-file",
         }
         # Flags that should be passed without a value
         flag_only = {
             "embeddings",
             "embedding",
+            "no_mmap",
+            "mlock",
+            "cache_list",
+            "list_devices",
+            "verbose_prompt",
+            "swa_full",
+            "no_host",
+            "check_tensors",
+            "log_disable",
+            "log_prefix",
+            "log_timestamps",
+            "offline",
+            "spm_infill",
+            "rerank",
+            "reranking",
+        }
+
+        bool_toggle = {
+            "perf": ("--perf", "--no-perf"),
+            "escape": ("--escape", "--no-escape"),
+            "op_offload": ("--op-offload", "--no-op-offload"),
+            "kv_offload": ("--kv-offload", "--no-kv-offload"),
+            "repack": ("--repack", "--no-repack"),
+            "direct_io": ("--direct-io", "--no-direct-io"),
+            "warmup": ("--warmup", "--no-warmup"),
+            "context_shift": ("--context-shift", "--no-context-shift"),
+            "cont_batching": ("--cont-batching", "--no-cont-batching"),
+            "kv_unified": ("--kv-unified", "--no-kv-unified"),
+            "mmproj_auto": ("--mmproj-auto", "--no-mmproj-auto"),
+            "mmproj_offload": ("--mmproj-offload", "--no-mmproj-offload"),
+            "webui": ("--webui", "--no-webui"),
         }
 
         for key, value in kwargs.items():
             if key in flag_only:
                 if value is True:
-                    cmd.append("--embeddings")
+                    if key in param_map and param_map[key].startswith("--"):
+                        cmd.append(param_map[key])
+                    elif key in ("embeddings", "embedding"):
+                        cmd.append("--embeddings")
+                    else:
+                        cmd.append(f"--{key.replace('_', '-')}")
                 # If value is False/None, skip the flag entirely
+                continue
+            if key in bool_toggle and isinstance(value, bool):
+                cmd.append(bool_toggle[key][0] if value else bool_toggle[key][1])
                 continue
             if key.startswith("-"):
                 # Already formatted parameter
                 cmd.extend([key, str(value)])
             elif key in param_map:
                 # Use mapped parameter name
+                if isinstance(value, (list, tuple)):
+                    value = ",".join(str(v) for v in value)
+                if key == "flash_attn" and isinstance(value, bool):
+                    value = "on" if value else "off"
                 cmd.extend([param_map[key], str(value)])
             else:
                 # Convert underscores to hyphens for standard parameters
+                if isinstance(value, (list, tuple)):
+                    value = ",".join(str(v) for v in value)
                 cmd.extend([f"--{key.replace('_', '-')}", str(value)])
 
         if verbose:
@@ -591,6 +866,33 @@ class ServerManager:
         self.stop_server()
         time.sleep(1)  # Brief pause before restart
         return self.start_server(model_path, **kwargs)
+
+    def start_from_preset(self, model_path: str, preset_name: Any = None, **kwargs) -> bool:
+        """
+        Start llama-server using a Kaggle preset.
+
+        Args:
+            model_path: Path to GGUF model
+            preset_name: Preset name or ServerPreset enum (default: AUTO)
+            **kwargs: Override preset values
+
+        Returns:
+            True if server started successfully
+        """
+        from .kaggle.presets import get_preset_config, ServerPreset
+
+        preset = ServerPreset.AUTO
+        if preset_name is not None:
+            if isinstance(preset_name, ServerPreset):
+                preset = preset_name
+            elif isinstance(preset_name, str):
+                preset = ServerPreset[preset_name.upper()] if preset_name.upper() in ServerPreset.__members__ else ServerPreset.AUTO
+
+        config = get_preset_config(preset)
+        preset_kwargs = config.to_server_kwargs()
+        preset_kwargs.update(kwargs)
+
+        return self.start_server(model_path=model_path, **preset_kwargs)
 
     def __del__(self):
         """Cleanup: stop server when manager is destroyed."""

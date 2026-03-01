@@ -56,6 +56,13 @@ from .gpu_context import (
     get_current_gpu_context,
     set_gpu_for_rapids,
     reset_gpu_context,
+    split_gpu_session,
+)
+from .pipeline import (
+    KagglePipelineConfig,
+    load_grafana_otlp_env_from_kaggle,
+    start_server_from_preset,
+    setup_otel_and_client,
 )
 
 __all__ = [
@@ -84,4 +91,11 @@ __all__ = [
     "get_current_gpu_context",
     "set_gpu_for_rapids",
     "reset_gpu_context",
+    "split_gpu_session",
+
+    # Pipeline helpers
+    "KagglePipelineConfig",
+    "load_grafana_otlp_env_from_kaggle",
+    "start_server_from_preset",
+    "setup_otel_and_client",
 ]

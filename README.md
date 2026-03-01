@@ -45,6 +45,26 @@ server.start_server(
 )
 ```
 
+## Kaggle Split-GPU + Observability
+```python
+from llamatelemetry.kaggle import KaggleEnvironment, split_gpu_session
+from llamatelemetry.telemetry import setup_grafana_otlp, InstrumentedLLMClient
+
+env = KaggleEnvironment.setup(split_gpu_mode=True, enable_graphistry=False)
+tracer, meter = setup_grafana_otlp(service_name="llama-gguf")
+
+# GPU 0 for llama-server, GPU 1 for RAPIDS/Graphistry
+with split_gpu_session(llm_gpu=0, graph_gpu=1) as ctx:
+    engine = env.create_engine("gemma-3-1b-Q4_K_M", **ctx["llm_server_kwargs"])
+    result = engine.generate("Hello from split GPUs", max_tokens=64)
+    print(result.text)
+
+# Instrumented client for server API usage
+client = InstrumentedLLMClient("http://127.0.0.1:8090")
+resp = client.chat_completion(messages=[{"role": "user", "content": "Explain GGUF."}], max_tokens=128)
+print(resp.choices[0].message.content)
+```
+
 ## Documentation Map
 Start here:
 - `docs/INDEX.md`

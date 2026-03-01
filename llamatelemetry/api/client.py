@@ -839,6 +839,45 @@ class LlamaCppClient:
         response.raise_for_status()
         return response.text
 
+    # =========================================================================
+    # Convenience Helpers
+    # =========================================================================
+
+    def chat_completion(self, messages: List[Dict[str, Any]], **kwargs) -> Union[CompletionResponse, Iterator[Dict[str, Any]]]:
+        """
+        Convenience wrapper for OpenAI-compatible chat completions.
+
+        Args:
+            messages: Chat messages
+            **kwargs: Additional options forwarded to ChatCompletionsAPI.create
+
+        Returns:
+            CompletionResponse or stream iterator
+        """
+        return self.chat.completions.create(messages=messages, **kwargs)
+
+    def simple_completion(self, prompt: str, **kwargs) -> Union[str, CompletionResponse, Iterator[Dict[str, Any]]]:
+        """
+        Simple completion helper that returns text when possible.
+
+        Args:
+            prompt: Prompt text
+            **kwargs: Parameters forwarded to native complete()
+
+        Returns:
+            Generated text, CompletionResponse, or stream iterator
+        """
+        response = self.complete(prompt=prompt, **kwargs)
+        if isinstance(response, CompletionResponse):
+            if response.choices:
+                choice = response.choices[0]
+                if choice.text:
+                    return choice.text
+                if choice.message and choice.message.content:
+                    return choice.message.content
+            return response
+        return response
+
 
 # =============================================================================
 # Sub-API Classes

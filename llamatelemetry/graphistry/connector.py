@@ -6,6 +6,7 @@ Connection and visualization utilities for PyGraphistry.
 
 import os
 from typing import Optional, Dict, Any, Union
+from dataclasses import dataclass
 
 
 def register_graphistry(
@@ -125,6 +126,13 @@ class GraphistryConnector:
                 "PyGraphistry is not installed. Install with:\n"
                 "  pip install graphistry[ai]"
             )
+
+        self._client = None
+        if hasattr(self._graphistry, "client"):
+            try:
+                self._client = self._graphistry.client()
+            except Exception:
+                self._client = None
         
         if auto_register:
             self._registered = register_graphistry(server=server)
@@ -151,6 +159,24 @@ class GraphistryConnector:
         Returns:
             True if registration successful
         """
+        if self._client is not None:
+            try:
+                if api_key:
+                    self._client.register(api=3, token=api_key, server=self.server)
+                elif username and password:
+                    self._client.register(api=3, username=username, password=password, server=self.server)
+                else:
+                    raise ValueError(
+                        "Graphistry credentials required. Set GRAPHISTRY_USERNAME and "
+                        "GRAPHISTRY_PASSWORD environment variables, or pass directly."
+                    )
+                self._registered = True
+                return True
+            except Exception as e:
+                print(f"Warning: Graphistry registration failed: {e}")
+                self._registered = False
+                return False
+
         self._registered = register_graphistry(
             username=username,
             password=password,
@@ -180,7 +206,10 @@ class GraphistryConnector:
         Returns:
             Graphistry graph object
         """
-        g = self._graphistry.edges(edges_df, source, destination)
+        if self._client is not None and hasattr(self._client, "edges"):
+            g = self._client.edges(edges_df, source, destination)
+        else:
+            g = self._graphistry.edges(edges_df, source, destination)
         
         if nodes_df is not None:
             g = g.nodes(nodes_df, node_id)
@@ -289,3 +318,37 @@ def plot_graph(
         node_id=node_id,
         **kwargs
     )
+
+
+@dataclass
+class GraphistrySession:
+    """
+    Helper for creating a registered Graphistry session.
+    """
+    connector: GraphistryConnector
+    registered: bool
+    server: str = "hub.graphistry.com"
+
+    @classmethod
+    def from_kaggle_secrets(cls, server: str = "hub.graphistry.com", auto_register: bool = True):
+        """
+        Create a Graphistry session using Kaggle secrets.
+        """
+        connector = GraphistryConnector(auto_register=False, server=server)
+        registered = False
+        if auto_register:
+            try:
+                from ..kaggle.secrets import setup_graphistry_auth
+                registered = setup_graphistry_auth()
+            except Exception:
+                registered = False
+        connector._registered = registered
+        return cls(connector=connector, registered=registered, server=server)
+
+    @classmethod
+    def from_env(cls, server: str = "hub.graphistry.com", auto_register: bool = True):
+        """
+        Create a Graphistry session using environment variables.
+        """
+        connector = GraphistryConnector(auto_register=auto_register, server=server)
+        return cls(connector=connector, registered=connector.is_registered, server=server)

@@ -37,6 +37,10 @@ class GraphistryTraceExporter:
     current graph state.
     """
 
+    SCHEMA_VERSION = "llamatelemetry.graph.v1"
+    NODE_TYPES = {"span", "model", "gpu", "unknown"}
+    EDGE_TYPES = {"child_of", "uses_model", "runs_on", "unknown"}
+
     def __init__(self, server: Optional[str] = None, max_spans: int = 10000):
         """
         Args:
@@ -89,6 +93,12 @@ class GraphistryTraceExporter:
             "llm.output.tokens": attrs.get("llm.output.tokens", 0),
             "llm.latency_ms": attrs.get("llm.latency_ms", duration_ms),
             "llm.tokens_per_sec": attrs.get("llm.tokens_per_sec", 0.0),
+            "llm.ttft_ms": attrs.get("llm.ttft_ms", 0.0),
+            "gen_ai.operation.name": attrs.get("gen_ai.operation.name", ""),
+            "gen_ai.request.model": attrs.get("gen_ai.request.model", ""),
+            "gen_ai.response.model": attrs.get("gen_ai.response.model", ""),
+            "gen_ai.usage.input_tokens": attrs.get("gen_ai.usage.input_tokens", 0),
+            "gen_ai.usage.output_tokens": attrs.get("gen_ai.usage.output_tokens", 0),
             "gpu.device_id": attrs.get("gpu.device_id", 0),
             "nccl.split_mode": attrs.get("nccl.split_mode", "none"),
             "status": str(span.status) if hasattr(span, "status") else "OK",
@@ -114,10 +124,15 @@ class GraphistryTraceExporter:
 
         nodes = []
         edges = []
+        extra_nodes = {}
 
         for s in self._spans_raw:
+            node_id = s["span_id"]
             nodes.append({
+                "node_id": node_id,
                 "span_id": s["span_id"],
+                "node_type": "span",
+                "schema_version": self.SCHEMA_VERSION,
                 "name": s["name"],
                 "duration_ms": s["duration_ms"],
                 "llm_model": s["llm.model"],
@@ -125,6 +140,12 @@ class GraphistryTraceExporter:
                 "llm_tokens_per_sec": s["llm.tokens_per_sec"],
                 "llm_input_tokens": s["llm.input.tokens"],
                 "llm_output_tokens": s["llm.output.tokens"],
+                "llm_ttft_ms": s["llm.ttft_ms"],
+                "gen_ai_operation": s["gen_ai.operation.name"],
+                "gen_ai_request_model": s["gen_ai.request.model"],
+                "gen_ai_response_model": s["gen_ai.response.model"],
+                "gen_ai_input_tokens": s["gen_ai.usage.input_tokens"],
+                "gen_ai_output_tokens": s["gen_ai.usage.output_tokens"],
                 "gpu_device_id": s["gpu.device_id"],
                 "nccl_split_mode": s["nccl.split_mode"],
                 "trace_id": s["trace_id"],
@@ -133,13 +154,56 @@ class GraphistryTraceExporter:
             if s["parent_span_id"]:
                 edges.append({
                     "src": s["parent_span_id"],
-                    "dst": s["span_id"],
+                    "dst": node_id,
+                    "edge_type": "child_of",
+                    "schema_version": self.SCHEMA_VERSION,
                     "weight": s["llm.tokens_per_sec"],
                     "latency_ms": s["llm.latency_ms"],
                 })
 
+            # Model node + edge
+            if s["llm.model"]:
+                model_id = f"model:{s['llm.model']}"
+                if model_id not in extra_nodes:
+                    extra_nodes[model_id] = {
+                        "node_id": model_id,
+                        "node_type": "model",
+                        "name": s["llm.model"],
+                        "schema_version": self.SCHEMA_VERSION,
+                    }
+                edges.append({
+                    "src": node_id,
+                    "dst": model_id,
+                    "edge_type": "uses_model",
+                    "schema_version": self.SCHEMA_VERSION,
+                    "weight": 1,
+                })
+
+            # GPU node + edge
+            gpu_id = s["gpu.device_id"]
+            gpu_node_id = f"gpu:{gpu_id}"
+            if gpu_node_id not in extra_nodes:
+                extra_nodes[gpu_node_id] = {
+                    "node_id": gpu_node_id,
+                    "node_type": "gpu",
+                    "name": f"GPU {gpu_id}",
+                    "schema_version": self.SCHEMA_VERSION,
+                }
+            edges.append({
+                "src": node_id,
+                "dst": gpu_node_id,
+                "edge_type": "runs_on",
+                "schema_version": self.SCHEMA_VERSION,
+                "weight": 1,
+            })
+
+        if extra_nodes:
+            nodes.extend(extra_nodes.values())
+
+        nodes, edges = self._validate_schema(nodes, edges)
+
         nodes_df = pd.DataFrame(nodes)
-        edges_df = pd.DataFrame(edges) if edges else pd.DataFrame(columns=["src", "dst", "weight", "latency_ms"])
+        edges_df = pd.DataFrame(edges) if edges else pd.DataFrame(columns=["src", "dst", "edge_type", "weight", "latency_ms"])
 
         return nodes_df, edges_df
 
@@ -166,9 +230,39 @@ class GraphistryTraceExporter:
 
         return (
             graphistry.edges(edges_df, "src", "dst")
-            .nodes(nodes_df, "span_id")
+            .nodes(nodes_df, "node_id")
             .bind(edge_color="latency_ms", node_color="llm_latency_ms")
         )
+
+    def _validate_schema(self, nodes: List[dict], edges: List[dict]) -> Tuple[List[dict], List[dict]]:
+        import warnings
+        cleaned_nodes = []
+        for node in nodes:
+            node_type = node.get("node_type") or "unknown"
+            if node_type not in self.NODE_TYPES:
+                warnings.warn(f"Unknown node_type '{node_type}', coercing to 'unknown'")
+                node_type = "unknown"
+            node["node_type"] = node_type
+            node.setdefault("schema_version", self.SCHEMA_VERSION)
+            if not node.get("node_id"):
+                warnings.warn("Skipping node with missing node_id")
+                continue
+            cleaned_nodes.append(node)
+
+        cleaned_edges = []
+        for edge in edges:
+            edge_type = edge.get("edge_type") or "unknown"
+            if edge_type not in self.EDGE_TYPES:
+                warnings.warn(f"Unknown edge_type '{edge_type}', coercing to 'unknown'")
+                edge_type = "unknown"
+            edge["edge_type"] = edge_type
+            edge.setdefault("schema_version", self.SCHEMA_VERSION)
+            if not edge.get("src") or not edge.get("dst"):
+                warnings.warn("Skipping edge with missing src/dst")
+                continue
+            cleaned_edges.append(edge)
+
+        return cleaned_nodes, cleaned_edges
 
     def clear(self) -> None:
         """Clear all collected spans."""

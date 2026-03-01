@@ -29,6 +29,7 @@ class ExportConfig:
     preserve_tokenizer: bool = True
     metadata: Optional[Dict[str, Any]] = None
     verbose: bool = True
+    use_unsloth_native: bool = True
 
 
 class UnslothExporter:
@@ -87,6 +88,18 @@ class UnslothExporter:
             print(f"Exporting Unsloth model to GGUF")
             print(f"  Output: {output_path}")
             print(f"  Quantization: {config.quant_type}")
+
+        # Prefer Unsloth native exporter when available
+        if config.use_unsloth_native and hasattr(model, "save_pretrained_gguf"):
+            output_dir = output_path if isinstance(output_path, Path) else Path(output_path)
+            output_dir = output_dir.parent if output_dir.suffix == ".gguf" else output_dir
+            self.export_with_unsloth_native(
+                model=model,
+                tokenizer=tokenizer,
+                output_dir=output_dir,
+                quant_method=config.quant_type.lower(),
+            )
+            return output_dir
 
         # Check if model has LoRA adapters
         has_adapters = self._check_has_adapters(model)

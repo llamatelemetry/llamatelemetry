@@ -137,3 +137,20 @@ python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = false
+
+# Add these lines to exclude the problematic OpenTelemetry path
+exclude = [
+    'opentelemetry-python/opentelemetry-api/src/opentelemetry/util/types.py',
+    'build/',
+    'dist/',
+    '.*/site-packages/.*',
+]
+
+# Or alternatively, ignore errors for OpenTelemetry modules
+[[tool.mypy.overrides]]
+module = [
+    "opentelemetry.*",
+    "opentelemetry-python.*",
+]
+ignore_errors = true
+ignore_missing_imports = true

@@ -37,6 +37,7 @@ from .rapids import (
 
 from .connector import (
     GraphistryConnector,
+    GraphistrySession,
     register_graphistry,
     plot_graph,
 )
@@ -46,6 +47,15 @@ from .viz import (
     TraceVisualization,
     MetricsVisualization,
     create_graph_viz,
+)
+
+from .builders import (
+    GraphistryBuilders,
+    InferenceRecord,
+    records_to_dataframe,
+    traces_to_records,
+    build_graph_nodes_edges,
+    build_latency_time_series,
 )
 
 __all__ = [
@@ -63,8 +73,15 @@ __all__ = [
     
     # Graphistry connector
     'GraphistryConnector',
+    'GraphistrySession',
     'register_graphistry',
     'plot_graph',
+    'GraphistryBuilders',
+    'InferenceRecord',
+    'records_to_dataframe',
+    'traces_to_records',
+    'build_graph_nodes_edges',
+    'build_latency_time_series',
 
     # High-level visualization
     'GraphistryViz',

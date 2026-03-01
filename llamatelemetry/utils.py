@@ -10,7 +10,34 @@ import os
 import subprocess
 import platform
 from pathlib import Path
+import importlib
 
+
+def check_import(module_name: str) -> Dict[str, Any]:
+    """
+    Check whether a module can be imported and return basic metadata.
+
+    Args:
+        module_name: Module name to import (e.g., "cudf")
+
+    Returns:
+        Dict with keys: available (bool), version (str|None), error (str|None)
+    """
+    try:
+        module = importlib.import_module(module_name)
+        return {
+            "module": module_name,
+            "available": True,
+            "version": getattr(module, "__version__", None),
+            "error": None,
+        }
+    except Exception as exc:
+        return {
+            "module": module_name,
+            "available": False,
+            "version": None,
+            "error": str(exc),
+        }
 
 def detect_cuda() -> Dict[str, Any]:
     """

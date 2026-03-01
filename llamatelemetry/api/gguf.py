@@ -986,6 +986,132 @@ def recommend_quant_for_kaggle(
     }
 
 
+def quantization_matrix(as_dataframe: bool = False):
+    """
+    Return a matrix of quantization types with size/quality metadata.
+
+    Args:
+        as_dataframe: If True, return a pandas DataFrame
+
+    Returns:
+        List[Dict[str, Any]] or pandas.DataFrame
+    """
+    rows = []
+    for name, info in QUANT_TYPE_INFO.items():
+        rows.append({
+            "name": name,
+            "generation": info.generation,
+            "bits_per_weight": info.bits_per_weight,
+            "quality_score": info.quality_score,
+            "requires_imatrix": info.requires_imatrix,
+            "description": info.description,
+        })
+
+    if as_dataframe:
+        try:
+            import pandas as pd
+            return pd.DataFrame(rows)
+        except Exception as exc:
+            raise ImportError("pandas is required for as_dataframe=True") from exc
+
+    return rows
+
+
+def gguf_report(model_path: str, include_raw_metadata: bool = False) -> Dict[str, Any]:
+    """
+    Build a structured report for a GGUF model.
+
+    Args:
+        model_path: Path to GGUF file
+        include_raw_metadata: Include raw GGUF metadata (may be large)
+
+    Returns:
+        Dict with key model attributes and summary
+    """
+    info = parse_gguf_header(model_path)
+    meta = info.metadata
+
+    report = {
+        "path": info.path,
+        "size_gb": round(info.size_gb, 3),
+        "version": info.version,
+        "tensor_count": info.tensor_count,
+        "quantization_type": info.quantization_type,
+        "architecture": meta.general_architecture,
+        "name": meta.general_name or Path(model_path).stem,
+        "author": meta.general_author,
+        "license": meta.general_license,
+        "context_length": meta.context_length,
+        "vocab_size": meta.vocab_size,
+        "param_count_b": round(meta.param_count_b, 3) if meta.param_count_b else 0.0,
+        "chat_template": bool(meta.chat_template),
+        "summary": get_model_summary(model_path),
+    }
+
+    if include_raw_metadata:
+        report["raw_metadata"] = meta.raw
+
+    return report
+
+
+def report_model_suitability(
+    model_path: str,
+    ctx_size: int = 4096,
+    dual_t4: bool = True,
+) -> Dict[str, Any]:
+    """
+    Assess whether a GGUF model fits Kaggle T4 GPUs and recommend settings.
+
+    Args:
+        model_path: Path to GGUF file
+        ctx_size: Target context length
+        dual_t4: Use dual T4 VRAM (30GB) when True, else single T4 (15GB)
+
+    Returns:
+        Dict with suitability metrics and recommendations
+    """
+    info = parse_gguf_header(model_path)
+    meta = info.metadata
+    param_count = meta.param_count if meta.param_count else 0
+
+    available_vram = 30.0 if dual_t4 else 15.0
+    kv_cache_gb = (ctx_size / 4096) * (param_count / 7e9) * 1.0 if param_count else 0.0
+    usable_vram = max(0.0, available_vram - kv_cache_gb - 1.0)
+    fits = info.size_gb <= usable_vram if usable_vram > 0 else False
+
+    # Recommend quantization for the parameter count
+    quant_rec = recommend_quant_for_kaggle(
+        param_count=param_count or 7_000_000_000,
+        dual_t4=dual_t4,
+        context_size=ctx_size,
+        prefer_quality=True,
+    )
+
+    # Recommend GPU layers based on size/VRAM
+    try:
+        from ..utils import get_recommended_gpu_layers
+        gpu_layers = get_recommended_gpu_layers(info.size_gb, available_vram)
+    except Exception:
+        gpu_layers = 99
+
+    return {
+        "model": meta.general_name or Path(model_path).stem,
+        "size_gb": round(info.size_gb, 3),
+        "quantization_type": info.quantization_type,
+        "param_count_b": round(meta.param_count_b, 3) if meta.param_count_b else 0.0,
+        "context_length": meta.context_length,
+        "ctx_size_target": ctx_size,
+        "available_vram_gb": available_vram,
+        "estimated_kv_cache_gb": round(kv_cache_gb, 2),
+        "usable_vram_gb": round(usable_vram, 2),
+        "fits": fits,
+        "recommended_quant": quant_rec.get("quant_type"),
+        "recommended_gpu_layers": gpu_layers,
+        "recommended_tensor_split": "0.5,0.5" if dual_t4 else "1.0",
+        "quantization_recommendation": quant_rec,
+    }
+
+
 def print_quant_guide():
     """
     Print a guide to GGUF quantization types.

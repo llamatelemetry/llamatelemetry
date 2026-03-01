@@ -101,6 +101,7 @@ dmypy.json
 
 # Local notebooks - personal/development notebooks (not for GitHub)
 notebooks-local/
+notebooks-local-2/
 
 # Local assets - reference files not for GitHub
 llamatelemetry-assets/
@@ -204,6 +205,9 @@ llamatelemetry-kaggle-executions/
 
 # Local chat history
 codex-chat-histroy/
+
+# Local notes
+notes/
 
 # Downloaded models directory
 models/

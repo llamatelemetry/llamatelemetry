@@ -17,6 +17,7 @@ from typing import Callable, Any, Optional, Dict
 from contextlib import contextmanager
 import time
 
+from .semconv import set_gen_ai_attr, set_gen_ai_provider
 
 def instrument_inference(
     tracer: Any,
@@ -59,6 +60,11 @@ def instrument_inference(
                 span.set_attribute("llm.model", model_name)
                 span.set_attribute("gpu.device_id", gpu_id)
                 span.set_attribute("nccl.split_mode", split_mode)
+                set_gen_ai_provider(span, "llama.cpp")
+                _set_gen_ai_operation(span, operation)
+                if model_name:
+                    set_gen_ai_attr(span, "request_model", model_name)
+                    set_gen_ai_attr(span, "response_model", model_name)
 
                 start_time = time.time()
 
@@ -110,6 +116,9 @@ def _annotate_from_result(span: Any, result: Any, latency_ms: float) -> None:
                 t = result["timings"]
                 if "predicted_per_second" in t:
                     span.set_attribute("llm.tokens_per_sec", t["predicted_per_second"])
+                ttft_ms = _estimate_ttft_ms(t)
+                if ttft_ms is not None:
+                    span.set_attribute("llm.ttft_ms", ttft_ms)
 
     except Exception:
         pass  # Don't fail if annotation fails
@@ -150,6 +159,11 @@ def inference_span(
     with tracer.start_as_current_span(operation) as span:
         span.set_attribute("llm.system", "llamatelemetry")
         span.set_attribute("llm.model", model)
+        set_gen_ai_provider(span, "llama.cpp")
+        _set_gen_ai_operation(span, operation)
+        if model:
+            set_gen_ai_attr(span, "request_model", model)
+            set_gen_ai_attr(span, "response_model", model)
 
         for key, value in attributes.items():
             span.set_attribute(key, value)
@@ -198,6 +212,11 @@ def batch_inference_span(
         parent.set_attribute("llm.system", "llamatelemetry")
         parent.set_attribute("llm.model", model)
         parent.set_attribute("llm.batch_size", batch_size)
+        set_gen_ai_provider(parent, "llama.cpp")
+        _set_gen_ai_operation(parent, "llm.batch_inference")
+        if model:
+            set_gen_ai_attr(parent, "request_model", model)
+            set_gen_ai_attr(parent, "response_model", model)
 
         for key, value in attributes.items():
             parent.set_attribute(key, value)
@@ -250,6 +269,35 @@ def create_llm_attributes(
         attrs["llm.tokens_per_sec"] = output_tokens / (latency_ms / 1000)
 
     return attrs
+
+
+def _set_gen_ai_operation(span: Any, operation: str) -> None:
+    op = "completion"
+    op_lower = (operation or "").lower()
+    if "chat" in op_lower:
+        op = "chat"
+    elif "embed" in op_lower:
+        op = "embeddings"
+    elif "token" in op_lower:
+        op = "tokenize"
+    set_gen_ai_attr(span, "operation_name", op)
+
+
+def _estimate_ttft_ms(timings: Any) -> Optional[float]:
+    try:
+        prompt_ms = float(timings.get("prompt_ms", 0.0))
+        pred_per_token = float(timings.get("predicted_per_token_ms", 0.0))
+        predicted_ms = float(timings.get("predicted_ms", 0.0))
+        predicted_n = float(timings.get("predicted_n", 0.0))
+        if pred_per_token > 0:
+            return prompt_ms + pred_per_token
+        if predicted_ms > 0 and predicted_n > 0:
+            return prompt_ms + (predicted_ms / predicted_n)
+        if prompt_ms > 0:
+            return prompt_ms
+    except Exception:
+        return None
+    return None
 
 
 def annotate_span_from_result(

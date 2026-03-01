@@ -110,6 +110,9 @@ from .gguf import (
     compare_models,
     validate_gguf,
     get_recommended_quant,
+    quantization_matrix,
+    gguf_report,
+    report_model_suitability,
 )
 
 __all__ = [
@@ -171,6 +174,9 @@ __all__ = [
     "compare_models",
     "validate_gguf",
     "get_recommended_quant",
+    "quantization_matrix",
+    "gguf_report",
+    "report_model_suitability",
     # NCCL
     "NCCLCommunicator",
     "NCCLConfig",

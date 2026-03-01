@@ -176,6 +176,7 @@ from .utils import (
     get_recommended_gpu_layers,
     validate_model_path,
 )
+from .api import kaggle_t4_dual_config
 
 __version__ = "0.1.0"  # SDK version (binary artifact is llama.cpp v0.1.0)
 __all__ = [
@@ -194,6 +195,7 @@ __all__ = [
     "print_system_info",
     "get_llama_cpp_cuda_path",
     "quick_infer",
+    "kaggle_t4_dual_config",
     # Existing modules (lazily imported)
     "jupyter",
     "chat",
@@ -254,6 +256,7 @@ class InferenceEngine:
         self._server_manager: Optional[ServerManager] = None
         self._model_path: Optional[Path] = None
         self._model_name: Optional[str] = None
+        self._last_suitability_report: Optional[Dict[str, Any]] = None
         self._metrics = {
             "requests": 0,
             "total_tokens": 0,
@@ -265,6 +268,9 @@ class InferenceEngine:
         self._tracer = None
         self._meter = None
         self._metrics_collector = None
+        self._split_mode: str = "none"
+        self._main_gpu: int = 0
+        self._tensor_split: Optional[List[float]] = None
 
         if self._telemetry_enabled:
             self._init_telemetry()
@@ -286,6 +292,10 @@ class InferenceEngine:
                     "enable_graphistry", False
                 ),
                 graphistry_server=self._telemetry_config.get("graphistry_server"),
+                llama_server_url=self.server_url,
+                llama_server_path=os.environ.get("LLAMA_SERVER_PATH"),
+                enable_llama_metrics=self._telemetry_config.get("enable_llama_metrics", True),
+                llama_metrics_interval=self._telemetry_config.get("llama_metrics_interval", 5.0),
             )
             self._tracer = tracer
             self._meter = meter
@@ -334,6 +344,7 @@ class InferenceEngine:
         verbose: bool = True,
         interactive_download: bool = True,
         silent: bool = False,
+        report_suitability: bool = False,
         **kwargs,
     ) -> Optional[bool]:
         """
@@ -354,6 +365,7 @@ class InferenceEngine:
             verbose: Print status messages (default: True)
             interactive_download: Ask for confirmation before downloading (default: True)
             silent: Suppress all llama-server output/warnings (default: False)
+            report_suitability: Print GGUF suitability report for Kaggle T4 (default: False)
             **kwargs: Additional server parameters (batch_size, ubatch_size, etc.)
 
         Returns:
@@ -427,6 +439,56 @@ class InferenceEngine:
         if not model_path.exists():
             raise FileNotFoundError(f"Model file not found: {model_path}")
 
+        # Optional: suitability report for Kaggle T4s
+        if report_suitability:
+            try:
+                from .api.gguf import report_model_suitability
+
+                cuda_info = detect_cuda()
+                dual_t4 = False
+                if cuda_info.get("available") and cuda_info.get("gpus"):
+                    gpu_names = [g.get("name", "") for g in cuda_info["gpus"]]
+                    dual_t4 = len(gpu_names) >= 2
+
+                report = report_model_suitability(
+                    model_path=str(model_path),
+                    ctx_size=ctx_size if ctx_size else 4096,
+                    dual_t4=dual_t4,
+                )
+                self._last_suitability_report = report
+                if verbose:
+                    print("\nGGUF Suitability Report:")
+                    print(f"  Model: {report.get('model')}")
+                    print(f"  Size: {report.get('size_gb')} GB")
+                    print(f"  Quant: {report.get('quantization_type')}")
+                    print(f"  Fits: {report.get('fits')}")
+                    print(f"  Recommended Quant: {report.get('recommended_quant')}")
+                    print(f"  Recommended GPU Layers: {report.get('recommended_gpu_layers')}")
+            except Exception:
+                pass
+
+        # Optional multi-GPU/NCCL configs (passed through to ServerManager)
+        multi_gpu_config = kwargs.pop("multi_gpu_config", None)
+        nccl_config = kwargs.pop("nccl_config", None)
+
+        # Enable observability endpoints by default when telemetry is enabled
+        if self._telemetry_enabled:
+            kwargs.setdefault("enable_metrics", True)
+            kwargs.setdefault("enable_props", True)
+            kwargs.setdefault("enable_slots", True)
+
+        # Capture split metadata for tracing (best-effort)
+        split_mode = kwargs.get("split_mode")
+        main_gpu = kwargs.get("main_gpu")
+        tensor_split = kwargs.get("tensor_split")
+        if multi_gpu_config is not None:
+            try:
+                split_mode = split_mode or getattr(multi_gpu_config.split_mode, "value", None)
+                main_gpu = main_gpu if main_gpu is not None else getattr(multi_gpu_config, "main_gpu", None)
+                tensor_split = tensor_split or getattr(multi_gpu_config, "tensor_split", None)
+            except Exception:
+                pass
+
         # Step 4: Start server if needed
         if not self.check_server():
             if auto_start:
@@ -459,6 +521,8 @@ class InferenceEngine:
                     ubatch_size=ubatch_size,
                     verbose=verbose,
                     silent=silent,
+                    multi_gpu_config=multi_gpu_config,
+                    nccl_config=nccl_config,
                     **kwargs,
                 )
 
@@ -474,6 +538,21 @@ class InferenceEngine:
         self._model_loaded = True
         self._model_path = model_path
         self._model_name = model_path.name
+        self._split_mode = str(split_mode or "none")
+        try:
+            self._main_gpu = int(main_gpu) if main_gpu is not None else 0
+        except Exception:
+            self._main_gpu = 0
+        if isinstance(tensor_split, str):
+            try:
+                self._tensor_split = [float(x) for x in tensor_split.split(",")]
+            except Exception:
+                self._tensor_split = None
+        elif isinstance(tensor_split, (list, tuple)):
+            try:
+                self._tensor_split = [float(x) for x in tensor_split]
+            except Exception:
+                self._tensor_split = None
 
         if verbose:
             print(f"\n✓ Model loaded and ready for inference")
@@ -482,6 +561,10 @@ class InferenceEngine:
             print(f"  Context Size: {ctx_size}")
 
         return True
+
+    def get_last_suitability_report(self) -> Optional[Dict[str, Any]]:
+        """Return the most recent GGUF suitability report, if any."""
+        return self._last_suitability_report
 
     def infer(
         self,
@@ -543,6 +626,21 @@ class InferenceEngine:
 
                     text = data.get("content", "")
                     tokens_generated = data.get("tokens_predicted", len(text.split()))
+                    ttft_ms = None
+                    try:
+                        t = data.get("timings", {}) if isinstance(data, dict) else {}
+                        prompt_ms = float(t.get("prompt_ms", 0.0))
+                        pred_per_token = float(t.get("predicted_per_token_ms", 0.0))
+                        predicted_ms = float(t.get("predicted_ms", 0.0))
+                        predicted_n = float(t.get("predicted_n", 0.0))
+                        if pred_per_token > 0:
+                            ttft_ms = prompt_ms + pred_per_token
+                        elif predicted_ms > 0 and predicted_n > 0:
+                            ttft_ms = prompt_ms + (predicted_ms / predicted_n)
+                        elif prompt_ms > 0:
+                            ttft_ms = prompt_ms
+                    except Exception:
+                        ttft_ms = None
 
                     # Update metrics
                     self._metrics["requests"] += 1
@@ -556,6 +654,7 @@ class InferenceEngine:
                                 latency_ms=latency_ms,
                                 tokens=tokens_generated,
                                 model=self._model_name or "",
+                                ttft_ms=ttft_ms,
                             )
                         except Exception:
                             pass
@@ -570,9 +669,13 @@ class InferenceEngine:
                                 prompt_tokens=prompt_tokens,
                                 output_tokens=tokens_generated,
                                 latency_ms=latency_ms,
-                                gpu_id=0,
-                                split_mode="none",
+                                gpu_id=self._main_gpu,
+                                split_mode=self._split_mode or "none",
                             )
+                            if self._tensor_split:
+                                span.set_attribute("nccl.tensor_split", ",".join(str(v) for v in self._tensor_split))
+                            if ttft_ms is not None:
+                                span.set_attribute("llm.ttft_ms", ttft_ms)
                         except Exception:
                             pass
 
@@ -632,6 +735,19 @@ class InferenceEngine:
                     except Exception:
                         pass
                 return result
+
+    def generate(self, prompt: str, **kwargs) -> "InferResult":
+        """
+        Alias for infer() to align with common LLM SDKs.
+
+        Args:
+            prompt: Input prompt text
+            **kwargs: Same parameters as infer()
+
+        Returns:
+            InferResult
+        """
+        return self.infer(prompt, **kwargs)
 
     def infer_stream(
         self,

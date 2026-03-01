@@ -214,6 +214,25 @@ def reset_gpu_context(value: Optional[str] = None) -> None:
         os.environ["CUDA_VISIBLE_DEVICES"] = value
 
 
+@contextmanager
+def split_gpu_session(llm_gpu: int = 0, graph_gpu: int = 1):
+    """
+    Convenience context for split-GPU workflows (LLM on GPU 0, Graphs on GPU 1).
+
+    Yields a dict with recommended llama-server kwargs and the active context.
+    """
+    llm_kwargs = {
+        "main_gpu": llm_gpu,
+        "tensor_split": "1.0,0.0" if llm_gpu != graph_gpu else None,
+    }
+    with GPUContext(gpu_ids=[graph_gpu]) as ctx:
+        yield {
+            "llm_server_kwargs": llm_kwargs,
+            "graph_gpu": graph_gpu,
+            "context": ctx,
+        }
+
+
 __all__ = [
     "GPUContext",
     "rapids_gpu",
@@ -222,4 +241,5 @@ __all__ = [
     "get_current_gpu_context",
     "set_gpu_for_rapids",
     "reset_gpu_context",
+    "split_gpu_session",
 ]

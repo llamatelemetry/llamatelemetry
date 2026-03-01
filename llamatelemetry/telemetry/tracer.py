@@ -17,6 +17,8 @@ Span semantic conventions used:
 
 from typing import Any, List, Optional
 
+from .semconv import set_gen_ai_attr, set_gen_ai_provider
+
 
 class InferenceTracerProvider:
     """
@@ -120,3 +122,9 @@ def annotate_inference_span(span: Any, model: str, prompt_tokens: int,
     span.set_attribute("llm.tokens_per_sec", tokens_per_sec)
     span.set_attribute("gpu.device_id", gpu_id)
     span.set_attribute("nccl.split_mode", split_mode)
+
+    set_gen_ai_provider(span, "llama.cpp")
+    set_gen_ai_attr(span, "request_model", model)
+    set_gen_ai_attr(span, "response_model", model)
+    set_gen_ai_attr(span, "usage_input_tokens", prompt_tokens)
+    set_gen_ai_attr(span, "usage_output_tokens", output_tokens)

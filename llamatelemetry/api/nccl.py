@@ -288,7 +288,7 @@ class NCCLCommunicator:
         >>> comm.finalize()
     """
     
-    def __init__(self, gpu_ids: List[int] = None, config: NCCLConfig = None):
+    def __init__(self, gpu_ids: List[int] = None, config: NCCLConfig = None, metrics_collector: Any = None):
         """
         Initialize NCCLCommunicator.
         
@@ -307,6 +307,13 @@ class NCCLCommunicator:
         self._comm_handle = None
         self._is_initialized = False
         self._lib = None
+        self._metrics_collector = metrics_collector
+        if self._metrics_collector is None:
+            try:
+                from ..telemetry import get_metrics_collector
+                self._metrics_collector = get_metrics_collector()
+            except Exception:
+                self._metrics_collector = None
     
     @property
     def is_initialized(self) -> bool:
@@ -381,6 +388,87 @@ class NCCLCommunicator:
         # NCCL doesn't have explicit barrier, use AllReduce with dummy data
         # In practice, use CUDA synchronization
         pass  # Simplified implementation
+
+    def _record_transfer(self, num_bytes: int) -> None:
+        if not self._metrics_collector:
+            return
+        try:
+            self._metrics_collector.record_nccl_transfer(num_bytes)
+        except Exception:
+            pass
+
+    def _tensor_nbytes(self, tensor: Any) -> int:
+        try:
+            return int(tensor.numel() * tensor.element_size())
+        except Exception:
+            return 0
+
+    def all_reduce(self, tensor: Any, op: str = "sum") -> Any:
+        """
+        Perform an all-reduce using torch.distributed if available.
+        Records NCCL bytes transferred for observability.
+        """
+        try:
+            import torch
+            import torch.distributed as dist
+        except Exception as e:
+            raise RuntimeError("torch.distributed is required for NCCL collectives") from e
+
+        if not dist.is_available() or not dist.is_initialized():
+            raise RuntimeError("torch.distributed is not initialized")
+
+        num_bytes = self._tensor_nbytes(tensor)
+        reduce_op = getattr(dist.ReduceOp, op.upper(), dist.ReduceOp.SUM)
+        dist.all_reduce(tensor, op=reduce_op)
+        self._record_transfer(num_bytes)
+        return tensor
+
+    def broadcast(self, tensor: Any, src: int = 0) -> Any:
+        """Broadcast a tensor using torch.distributed and record transfer bytes."""
+        try:
+            import torch.distributed as dist
+        except Exception as e:
+            raise RuntimeError("torch.distributed is required for NCCL collectives") from e
+
+        if not dist.is_available() or not dist.is_initialized():
+            raise RuntimeError("torch.distributed is not initialized")
+
+        num_bytes = self._tensor_nbytes(tensor)
+        dist.broadcast(tensor, src=src)
+        self._record_transfer(num_bytes)
+        return tensor
+
+    def reduce(self, tensor: Any, dst: int = 0, op: str = "sum") -> Any:
+        """Reduce a tensor to dst using torch.distributed and record transfer bytes."""
+        try:
+            import torch.distributed as dist
+        except Exception as e:
+            raise RuntimeError("torch.distributed is required for NCCL collectives") from e
+
+        if not dist.is_available() or not dist.is_initialized():
+            raise RuntimeError("torch.distributed is not initialized")
+
+        num_bytes = self._tensor_nbytes(tensor)
+        reduce_op = getattr(dist.ReduceOp, op.upper(), dist.ReduceOp.SUM)
+        dist.reduce(tensor, dst=dst, op=reduce_op)
+        self._record_transfer(num_bytes)
+        return tensor
+
+    def reduce_scatter(self, output: Any, input_tensor: Any, op: str = "sum") -> Any:
+        """Reduce-scatter using torch.distributed and record transfer bytes."""
+        try:
+            import torch.distributed as dist
+        except Exception as e:
+            raise RuntimeError("torch.distributed is required for NCCL collectives") from e
+
+        if not dist.is_available() or not dist.is_initialized():
+            raise RuntimeError("torch.distributed is not initialized")
+
+        num_bytes = self._tensor_nbytes(input_tensor)
+        reduce_op = getattr(dist.ReduceOp, op.upper(), dist.ReduceOp.SUM)
+        dist.reduce_scatter(output, input_tensor, op=reduce_op)
+        self._record_transfer(num_bytes)
+        return output
     
     def __enter__(self):
         """Context manager entry."""
@@ -513,6 +601,7 @@ def print_nccl_info():
 
 def get_llama_cpp_nccl_args(
     gpu_ids: List[int] = None,
+    main_gpu: Optional[int] = None,
     split_mode: str = "layer",
     tensor_split: List[float] = None
 ) -> List[str]:
@@ -536,6 +625,8 @@ def get_llama_cpp_nccl_args(
         -ngl -1 --split-mode layer --tensor-split 0.5,0.5
     """
     gpu_ids = gpu_ids or [0, 1]
+    if main_gpu is None and gpu_ids:
+        main_gpu = gpu_ids[0]
     
     if tensor_split is None:
         # Equal split by default
@@ -546,5 +637,8 @@ def get_llama_cpp_nccl_args(
         "--split-mode", split_mode,
         "--tensor-split", ",".join(f"{v:.2f}" for v in tensor_split),
     ]
-    
+
+    if main_gpu is not None:
+        args.extend(["--main-gpu", str(main_gpu)])
+
     return args

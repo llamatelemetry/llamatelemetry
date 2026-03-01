@@ -17,7 +17,9 @@ Instruments:
 import subprocess
 import threading
 import time
-from typing import Any, Optional
+from typing import Any, Optional, Dict
+
+from .semconv import metric_name, attr_name
 
 
 class GpuMetricsCollector:
@@ -28,14 +30,26 @@ class GpuMetricsCollector:
     every `poll_interval` seconds.
     """
 
-    def __init__(self, meter_provider: Any, poll_interval: float = 5.0):
+    def __init__(
+        self,
+        meter_provider: Any,
+        poll_interval: float = 5.0,
+        server_url: Optional[str] = None,
+        llama_cpp_poll_interval: float = 5.0,
+    ):
         """
         Args:
             meter_provider: OTel MeterProvider
             poll_interval: Seconds between nvidia-smi polls (default: 5)
+            server_url: Optional llama-server URL for /metrics observability
+            llama_cpp_poll_interval: Cache interval for llama.cpp metrics fetch
         """
         self._meter_provider = meter_provider
         self._poll_interval = poll_interval
+        self._server_url = server_url
+        self._llama_cpp_poll_interval = max(0.5, float(llama_cpp_poll_interval))
+        self._llama_cpp_last_fetch = 0.0
+        self._llama_cpp_cache: Dict[str, float] = {}
         self._running = False
         self._thread: Optional[threading.Thread] = None
 
@@ -89,6 +103,92 @@ class GpuMetricsCollector:
                 description="Inference request latency",
                 unit="ms",
             )
+
+            # GenAI semantic convention metrics (mirrors)
+            self._gen_ai_request_duration = meter.create_histogram(
+                name=metric_name("server_request_duration"),
+                description="GenAI server request duration",
+                unit="ms",
+            )
+            self._gen_ai_time_to_first_token = meter.create_histogram(
+                name=metric_name("server_time_to_first_token"),
+                description="GenAI server time to first token",
+                unit="ms",
+            )
+            self._gen_ai_time_per_output_token = meter.create_histogram(
+                name=metric_name("server_time_per_output_token"),
+                description="GenAI server time per output token",
+                unit="ms",
+            )
+            self._gen_ai_token_usage = meter.create_histogram(
+                name=metric_name("client_token_usage"),
+                description="GenAI token usage",
+                unit="tokens",
+            )
+
+            # NCCL bytes transferred
+            self._nccl_bytes_counter = meter.create_counter(
+                name="llamatelemetry.nccl.bytes_transferred",
+                description="Total NCCL bytes transferred",
+                unit="By",
+            )
+
+            # Optional llama.cpp /metrics observability
+            if self._server_url:
+                self._llama_cpp_requests_processing = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.requests_processing",
+                    description="llama.cpp requests currently processing",
+                    unit="1",
+                    callbacks=[self._observe_llama_cpp_requests_processing],
+                )
+                self._llama_cpp_requests_deferred = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.requests_deferred",
+                    description="llama.cpp requests deferred",
+                    unit="1",
+                    callbacks=[self._observe_llama_cpp_requests_deferred],
+                )
+                self._llama_cpp_prompt_tokens_total = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.prompt_tokens_total",
+                    description="llama.cpp prompt tokens total",
+                    unit="tokens",
+                    callbacks=[self._observe_llama_cpp_prompt_tokens_total],
+                )
+                self._llama_cpp_predicted_tokens_total = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.predicted_tokens_total",
+                    description="llama.cpp predicted tokens total",
+                    unit="tokens",
+                    callbacks=[self._observe_llama_cpp_predicted_tokens_total],
+                )
+                self._llama_cpp_prompt_tokens_per_sec = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.prompt_tokens_per_sec",
+                    description="llama.cpp prompt throughput tokens/sec",
+                    unit="tokens/s",
+                    callbacks=[self._observe_llama_cpp_prompt_tokens_per_sec],
+                )
+                self._llama_cpp_predicted_tokens_per_sec = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.predicted_tokens_per_sec",
+                    description="llama.cpp predicted throughput tokens/sec",
+                    unit="tokens/s",
+                    callbacks=[self._observe_llama_cpp_predicted_tokens_per_sec],
+                )
+                self._llama_cpp_kv_cache_usage_ratio = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.kv_cache_usage_ratio",
+                    description="llama.cpp KV-cache usage ratio",
+                    unit="1",
+                    callbacks=[self._observe_llama_cpp_kv_cache_usage_ratio],
+                )
+                self._llama_cpp_kv_cache_tokens = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.kv_cache_tokens",
+                    description="llama.cpp KV-cache tokens",
+                    unit="tokens",
+                    callbacks=[self._observe_llama_cpp_kv_cache_tokens],
+                )
+                self._llama_cpp_n_tokens_max = meter.create_observable_gauge(
+                    name="llamatelemetry.llama_cpp.n_tokens_max",
+                    description="llama.cpp max observed tokens",
+                    unit="tokens",
+                    callbacks=[self._observe_llama_cpp_n_tokens_max],
+                )
 
             self._instruments_ready = True
         except Exception:
@@ -162,7 +262,7 @@ class GpuMetricsCollector:
         except Exception:
             return []
 
-    def record_inference(self, latency_ms: float, tokens: int, model: str = "") -> None:
+    def record_inference(self, latency_ms: float, tokens: int, model: str = "", ttft_ms: Optional[float] = None) -> None:
         """
         Record an inference event. Called by InferenceEngine after each request.
 
@@ -183,9 +283,88 @@ class GpuMetricsCollector:
         self._total_tokens += tokens
         self._total_requests += 1
 
+        gen_ai_attrs: Dict[str, Any] = {}
+        if model:
+            gen_ai_attrs[attr_name("request_model")] = model
+            gen_ai_attrs[attr_name("response_model")] = model
+        gen_ai_attrs[attr_name("system")] = "llama.cpp"
+
+        try:
+            self._gen_ai_request_duration.record(latency_ms, gen_ai_attrs)
+            if tokens > 0 and latency_ms > 0:
+                self._gen_ai_time_per_output_token.record(latency_ms / tokens, gen_ai_attrs)
+            if ttft_ms is not None:
+                self._gen_ai_time_to_first_token.record(ttft_ms, gen_ai_attrs)
+            self._gen_ai_token_usage.record(tokens, gen_ai_attrs)
+        except Exception:
+            pass
+
     def record_nccl_transfer(self, bytes_transferred: int) -> None:
         """Record NCCL data transfer volume."""
         self._nccl_bytes += bytes_transferred
+        try:
+            if self._instruments_ready:
+                self._nccl_bytes_counter.add(int(bytes_transferred))
+        except Exception:
+            pass
+
+    def _fetch_llama_cpp_metrics(self) -> Dict[str, float]:
+        if not self._server_url:
+            return {}
+        now = time.time()
+        if now - self._llama_cpp_last_fetch < self._llama_cpp_poll_interval:
+            return self._llama_cpp_cache
+
+        try:
+            import requests
+            response = requests.get(f"{self._server_url}/metrics", timeout=3.0)
+            response.raise_for_status()
+            from .monitor import parse_llama_cpp_metrics
+            parsed = parse_llama_cpp_metrics(response.text)
+            normalized = parsed.get("normalized", {})
+            if isinstance(normalized, dict):
+                self._llama_cpp_cache = {k: float(v) for k, v in normalized.items()}
+        except Exception:
+            pass
+
+        self._llama_cpp_last_fetch = now
+        return self._llama_cpp_cache
+
+    def _observe_llama_cpp_metric(self, key: str):
+        try:
+            from opentelemetry.metrics import Observation
+            metrics = self._fetch_llama_cpp_metrics()
+            value = metrics.get(key, 0.0)
+            return [Observation(value)]
+        except Exception:
+            return []
+
+    def _observe_llama_cpp_requests_processing(self, options=None):
+        return self._observe_llama_cpp_metric("requests_processing")
+
+    def _observe_llama_cpp_requests_deferred(self, options=None):
+        return self._observe_llama_cpp_metric("requests_deferred")
+
+    def _observe_llama_cpp_prompt_tokens_total(self, options=None):
+        return self._observe_llama_cpp_metric("tokens_prompt")
+
+    def _observe_llama_cpp_predicted_tokens_total(self, options=None):
+        return self._observe_llama_cpp_metric("tokens_predicted")
+
+    def _observe_llama_cpp_prompt_tokens_per_sec(self, options=None):
+        return self._observe_llama_cpp_metric("prompt_tokens_per_sec")
+
+    def _observe_llama_cpp_predicted_tokens_per_sec(self, options=None):
+        return self._observe_llama_cpp_metric("predicted_tokens_per_sec")
+
+    def _observe_llama_cpp_kv_cache_usage_ratio(self, options=None):
+        return self._observe_llama_cpp_metric("kv_cache_usage_ratio")
+
+    def _observe_llama_cpp_kv_cache_tokens(self, options=None):
+        return self._observe_llama_cpp_metric("kv_cache_tokens")
+
+    def _observe_llama_cpp_n_tokens_max(self, options=None):
+        return self._observe_llama_cpp_metric("n_tokens_max")
 
     def start(self) -> None:
         """Start background GPU polling (no-op if already running)."""

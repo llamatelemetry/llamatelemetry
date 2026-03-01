@@ -73,6 +73,79 @@ class InferenceRecord:
     model: str = ""
 
 
+def parse_llama_cpp_metrics(text: str) -> Dict[str, Any]:
+    """
+    Parse llama.cpp Prometheus metrics into a structured summary.
+
+    Returns:
+        Dict with normalized keys and raw aggregates.
+    """
+    import re
+
+    pattern = re.compile(
+        r"^([a-zA-Z_:][a-zA-Z0-9_:]*)(\{[^}]*\})?\s+([+-]?[0-9]*\.?[0-9]+(?:[eE][+-]?\d+)?)$"
+    )
+    agg: Dict[str, float] = {}
+    for line in text.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        match = pattern.match(line)
+        if not match:
+            continue
+        name = match.group(1)
+        try:
+            value = float(match.group(3))
+        except ValueError:
+            continue
+        if name.startswith("llama_cpp_") or name.startswith("llamacpp:"):
+            agg[name] = agg.get(name, 0.0) + value
+
+    mapping = {
+        # Older llama.cpp metric names (underscored)
+        "llama_cpp_tokens_total": "tokens_total",
+        "llama_cpp_tokens_prompt": "tokens_prompt",
+        "llama_cpp_tokens_predicted": "tokens_predicted",
+        "llama_cpp_requests_total": "requests_total",
+        "llama_cpp_requests_processing": "requests_processing",
+        "llama_cpp_requests_done": "requests_done",
+        "llama_cpp_requests_err": "requests_error",
+        "llama_cpp_requests_error": "requests_error",
+        "llama_cpp_slots_total": "slots_total",
+        "llama_cpp_slots_idle": "slots_idle",
+        "llama_cpp_slots_processing": "slots_processing",
+        "llama_cpp_kv_cache_used": "kv_cache_used",
+        "llama_cpp_kv_cache_used_bytes": "kv_cache_used_bytes",
+        "llama_cpp_cache_used": "cache_used",
+        "llama_cpp_cache_used_bytes": "cache_used_bytes",
+        "llama_cpp_embeddings_total": "embeddings_total",
+        "llama_cpp_eval_count": "eval_count",
+        "llama_cpp_eval_duration": "eval_duration",
+        "llama_cpp_prompt_eval_count": "prompt_eval_count",
+        "llama_cpp_prompt_eval_duration": "prompt_eval_duration",
+        # Newer llama.cpp metric names (namespaced)
+        "llamacpp:prompt_tokens_total": "tokens_prompt",
+        "llamacpp:tokens_predicted_total": "tokens_predicted",
+        "llamacpp:prompt_tokens_seconds": "prompt_tokens_per_sec",
+        "llamacpp:predicted_tokens_seconds": "predicted_tokens_per_sec",
+        "llamacpp:kv_cache_usage_ratio": "kv_cache_usage_ratio",
+        "llamacpp:kv_cache_tokens": "kv_cache_tokens",
+        "llamacpp:requests_processing": "requests_processing",
+        "llamacpp:requests_deferred": "requests_deferred",
+        "llamacpp:n_tokens_max": "n_tokens_max",
+    }
+
+    normalized: Dict[str, float] = {}
+    for key, norm in mapping.items():
+        if key in agg:
+            normalized[norm] = agg[key]
+
+    return {
+        "normalized": normalized,
+        "raw_aggregate": agg,
+    }
+
+
 class PerformanceMonitor:
     """
     Aggregate and monitor inference performance metrics.
@@ -115,6 +188,8 @@ class PerformanceMonitor:
 
         self._records: deque = deque(maxlen=window_size)
         self._snapshots: List[PerformanceSnapshot] = []
+        self._last_server_metrics: Dict[str, float] = {}
+        self._last_llama_cpp_metrics: Dict[str, Any] = {}
 
         self._total_requests = 0
         self._total_tokens = 0
@@ -237,15 +312,111 @@ class PerformanceMonitor:
         """
         return self._snapshots.copy()
 
+    def snapshots_to_dataframe(self):
+        """
+        Convert snapshots to pandas DataFrame.
+        """
+        try:
+            import pandas as pd
+        except Exception as exc:
+            raise ImportError("pandas is required for snapshots_to_dataframe") from exc
+        return pd.DataFrame([s.__dict__ for s in self._snapshots])
+
+    def snapshot_to_dataframe(self):
+        """
+        Backward-compatible alias for snapshots_to_dataframe().
+        """
+        return self.snapshots_to_dataframe()
+
+    def records_to_dataframe(self):
+        """
+        Convert inference records to pandas DataFrame.
+        """
+        try:
+            import pandas as pd
+        except Exception as exc:
+            raise ImportError("pandas is required for records_to_dataframe") from exc
+        return pd.DataFrame([r.__dict__ for r in self._records])
+
     def reset(self) -> None:
         """Reset all metrics to initial state."""
         with self._lock:
             self._records.clear()
             self._snapshots.clear()
+            self._last_server_metrics = {}
+            self._last_llama_cpp_metrics = {}
             self._total_requests = 0
             self._total_tokens = 0
             self._total_latency_ms = 0.0
             self._start_time = time.time()
+
+    def _parse_prometheus_metrics(self, text: str) -> Dict[str, float]:
+        """
+        Parse Prometheus metrics text into a flat dict.
+        """
+        metrics: Dict[str, float] = {}
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) < 2:
+                continue
+            key = parts[0]
+            try:
+                value = float(parts[1])
+            except ValueError:
+                continue
+            metrics[key] = value
+        return metrics
+
+    def parse_llama_cpp_metrics(self, text: str) -> Dict[str, Any]:
+        """
+        Parse llama.cpp Prometheus metrics into a structured summary.
+
+        Returns:
+            Dict with normalized keys and raw aggregates.
+        """
+        return parse_llama_cpp_metrics(text)
+
+    def record_metrics_from_llama_server(
+        self,
+        server_url: str = "http://127.0.0.1:8090",
+        metrics_text: Optional[str] = None,
+        timeout: float = 5.0,
+    ) -> Dict[str, float]:
+        """
+        Fetch and parse llama.cpp /metrics for observability.
+
+        Args:
+            server_url: Base URL of llama-server
+            metrics_text: Optional metrics text (skips HTTP fetch)
+            timeout: Request timeout
+
+        Returns:
+            Dict of parsed Prometheus metrics
+        """
+        if metrics_text is None:
+            try:
+                import requests
+                response = requests.get(f"{server_url}/metrics", timeout=timeout)
+                response.raise_for_status()
+                metrics_text = response.text
+            except Exception:
+                return {}
+
+        metrics = self._parse_prometheus_metrics(metrics_text)
+        self._last_server_metrics = metrics
+        self._last_llama_cpp_metrics = self.parse_llama_cpp_metrics(metrics_text)
+        return metrics
+
+    def get_last_server_metrics(self) -> Dict[str, float]:
+        """Return last parsed /metrics snapshot."""
+        return self._last_server_metrics.copy()
+
+    def get_last_llama_cpp_metrics(self) -> Dict[str, Any]:
+        """Return last structured llama.cpp metrics snapshot."""
+        return self._last_llama_cpp_metrics.copy()
 
     def _calculate_snapshot(self) -> PerformanceSnapshot:
         """Calculate current snapshot (called with lock held)."""
