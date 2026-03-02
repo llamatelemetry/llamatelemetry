@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   actionlint:
     runs-on: ubuntu-latest
@@ -16,4 +20,4 @@ jobs:
         uses: reviewdog/action-actionlint@v1
         with:
           reporter: github-check
-          fail_on_error: true
+          fail_level: error
