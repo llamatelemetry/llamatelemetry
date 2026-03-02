@@ -265,9 +265,13 @@ docs/huggingface/add_admin_to_org.md
 **/.ipynb_checkpoints/
 
 # Executed notebook variants (keep only clean versions)
+# NOTE: notebooks/ folder is explicitly included below
 *-e[0-9].ipynb
 *-e[0-9][0-9].ipynb
 *-executed*.ipynb
+
+# Allow official SDK notebooks in notebooks/ folder
+!notebooks/*.ipynb
 
 # ============================================================================
 # SECRETS & CREDENTIALS

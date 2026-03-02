@@ -1,25 +1,24 @@
 # Visual Comparison
 
-This file provides a quick, scan-friendly view of the notebook set.
+Quick, scan-friendly view of the notebook set.
 
-| Notebook | Focus |
-| --- | --- |
-| `01-quickstart-llamatelemetry-v0-1-0-e1.ipynb` | Quickstart: install, load model, run inference |
-| `02-llama-server-setup-llamatelemetry-v0-1-0-e1.ipynb` | ServerManager setup + /health /props /slots /metrics |
-| `03-multi-gpu-inference-llamatelemetry-v0-1-0-e1.ipynb` | Multi-GPU config (split mode, NCCL config) |
-| `04-gguf-quantization-llamatelemetry-v0-1-0-e1.ipynb` | GGUF reports and suitability checks |
-| `05-unsloth-integration-llamatelemetry-v0-1-0-e1.ipynb` | Unsloth export to GGUF (example) |
-| `06-split-gpu-graphistry-llamatelemetry-v0-1-0-e1.ipynb` | Split GPU session + Graphistry basics |
-| `07-knowledge-graph-extraction-graphistry-v0-1-0-e1.ipynb` | Knowledge graph builder example |
-| `08-document-network-analysis-graphistry-e1.ipynb` | Document similarity network example |
-| `09-large-models-kaggle-llamatelemetry-e3.ipynb` | Large model suitability + presets |
-| `10-complete-workflow-llamatelemetry-v0-1-0-e1.ipynb` | End-to-end Kaggle pipeline helper usage |
-| `11-gguf-neural-network-graphistry-vis-executed-e1.ipynb` | GGUF metadata + embedding kNN graph |
-| `12-gguf-attention-mechanism-explorer-executed-e1.ipynb` | Attention matrix graph example |
-| `13-gguf-token-embedding-visualizer-executed-e1.ipynb` | Token embedding kNN visualization |
-| `14-opentelemetry-llm-observability-e5.ipynb` | OTLP setup + instrumented client |
-| `15-rt-performance-monitoring-llamatelemetry-e3.ipynb` | PerformanceMonitor + /metrics parsing |
-| `16-production-observability-llamatelemetry-e2.ipynb` | Production observability pipeline setup |
-| `17-llamatelemetry-wandb-kaggle-notebook-e2.ipynb` | W&B logging + telemetry pipeline (updated) |
-| `17-otel-graphistry-trace-glue-e2.ipynb` | Trace-to-graph helpers for Graphistry |
-| `17-llamatelemetry-wandb-kaggle-notebook.ipynb` | Legacy W&B notebook (pre-e2) |
+| # | Notebook | Focus | GPU? |
+|---|----------|-------|------|
+| 01 | `01-quickstart-*` | Quickstart: install, GPU check, load model, run inference | Yes |
+| 02 | `02-llama-server-setup-*` | ServerManager setup + /health /props /slots /metrics | Yes |
+| 03 | `03-multi-gpu-inference-*` | Multi-GPU config (SplitMode, NCCLConfig, split_gpu_session) | Yes |
+| 04 | `04-gguf-quantization-*` | GGUF reports, suitability checks, quantization matrix | No |
+| 05 | `05-unsloth-integration-*` | Unsloth fine-tune + GGUF export workflow | Yes |
+| 06 | `06-split-gpu-graphistry-*` | Split GPU session + Graphistry knowledge graph basics | Yes |
+| 07 | `07-knowledge-graph-extraction-*` | Knowledge graph builder with entities and relationships | No |
+| 08 | `08-document-network-analysis-*` | Document similarity network graph | No |
+| 09 | `09-large-models-kaggle-*` | Large model suitability + server presets | Yes |
+| 10 | `10-complete-workflow-*` | End-to-end Kaggle pipeline (OTLP + preset + client) | Yes |
+| 11 | `11-gguf-neural-network-graphistry-*` | GGUF metadata + embedding kNN graph visualization | No |
+| 12 | `12-gguf-attention-mechanism-*` | Attention weight matrix graph exploration | No |
+| 13 | `13-gguf-token-embedding-*` | Token embedding kNN visualization with clusters | No |
+| 14 | `14-opentelemetry-llm-observability-*` | OTLP setup + InstrumentedLlamaCppClient | Yes |
+| 15 | `15-rt-performance-monitoring-*` | PerformanceMonitor + /metrics parsing + DataFrame export | Yes |
+| 16 | `16-production-observability-*` | Production observability pipeline setup | Yes |
+| 17 | `17-llamatelemetry-wandb-*` | W&B logging + telemetry pipeline on Kaggle | Yes |
+| 18 | `18-otel-graphistry-trace-glue-*` | Trace-to-graph helpers (spans to DataFrames to graphs) | No |
