@@ -272,6 +272,8 @@ docs/huggingface/add_admin_to_org.md
 
 # Allow official SDK notebooks in notebooks/ folder
 !notebooks/*.ipynb
+# Allow archived notebooks to be tracked
+!notebooks-archived/*.ipynb
 
 # ============================================================================
 # SECRETS & CREDENTIALS

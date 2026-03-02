@@ -1,53 +1,61 @@
-# Quick Start (Kaggle Dual T4)
+# Quick Start Guide
 
-This guide gets you running in minutes on Kaggle dual T4.
+This walkthrough loads a small GGUF model, launches `llama-server`, and runs inference.
 
-## Requirements
-- Kaggle notebook
-- GPU T4 x2
-- Internet enabled
+## 1) Install
 
-## Install
-```python
-!pip install -q --no-cache-dir --force-reinstall git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+```bash
+pip install --no-cache-dir --force-reinstall \
+  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
 ```
 
-## Download GGUF Model
-```python
-from huggingface_hub import hf_hub_download
+## 2) Verify CUDA
 
-model_path = hf_hub_download(
-    repo_id="unsloth/gemma-3-1b-it-GGUF",
-    filename="gemma-3-1b-it-Q4_K_M.gguf",
-    local_dir="/kaggle/working/models",
-)
+```python
+from llamatelemetry import detect_cuda
+
+cuda_info = detect_cuda()
+print(cuda_info)
 ```
 
-## Start Server (GPU0)
-```python
-from llamatelemetry.server import ServerManager
+## 3) Load a model
 
-server = ServerManager()
-server.start_server(
-    model_path=model_path,
-    gpu_layers=99,
-    tensor_split="1.0,0.0",
-    flash_attn=1,
-)
+```python
+import llamatelemetry as lt
+
+engine = lt.InferenceEngine(enable_telemetry=False)
+engine.load_model("gemma-3-1b-Q4_K_M", auto_start=True)
 ```
 
-## Run Inference
-```python
-from llamatelemetry.api import LlamaCppClient
+## 4) Run inference
 
-client = LlamaCppClient("http://127.0.0.1:8090")
-resp = client.chat.completions.create(
-    messages=[{"role": "user", "content": "What is CUDA?"}],
-    max_tokens=80,
-)
-print(resp.choices[0].message.content)
+```python
+result = engine.generate("What is CUDA?", max_tokens=64)
+print(result.text)
 ```
 
-## Next
-- `docs/NOTEBOOKS_GUIDE.md`
-- `docs/INTEGRATION_GUIDE.md`
+## 5) Batch inference
+
+```python
+prompts = [
+    "Explain tensor cores in one sentence.",
+    "What is llama.cpp?",
+    "How does GGUF quantization work?",
+]
+results = engine.batch_infer(prompts, max_tokens=64)
+for r in results:
+    print(r.text)
+```
+
+## 6) Fetch metrics
+
+```python
+metrics = engine.get_metrics()
+print(metrics)
+```
+
+## 7) Clean up
+
+```python
+engine.unload_model()
+```

@@ -1,27 +1,31 @@
-# Documentation Index (v0.1.0)
+# llamatelemetry Documentation Index
 
-This index is the single source of truth for all docs in this repo.
+This folder contains the mkdocs source documentation for the `llamatelemetry` SDK.
 
-## Start Here
-- `docs/INSTALLATION.md`
-- `docs/QUICK_START_GUIDE.md`
-- `docs/NOTEBOOKS_GUIDE.md`
+## Start here
 
-## Core Guides
-- `docs/ARCHITECTURE.md`
-- `docs/INTEGRATION_GUIDE.md`
-- `docs/CONFIGURATION.md`
-- `docs/TROUBLESHOOTING.md`
+- `INSTALLATION.md`
+- `QUICK_START_GUIDE.md`
+- `KAGGLE_GUIDE.md`
 
-## Reference
-- `docs/API_REFERENCE.md`
-- `docs/QUICK_REFERENCE.md`
-- `docs/GGUF_GUIDE.md`
+## Core docs
 
-## Kaggle Focus
-- `docs/KAGGLE_GUIDE.md`
-- `docs/guides/KAGGLE_INSTALL_GUIDE.md`
+- `ARCHITECTURE.md`
+- `API_REFERENCE.md`
+- `CONFIGURATION.md`
+- `INTEGRATION_GUIDE.md`
+- `NOTEBOOKS_GUIDE.md`
+- `TROUBLESHOOTING.md`
 
-## Notebooks
-- `notebooks/README.md`
-- `notebooks/14-15-16-INDEX.md`
+## Additional resources
+
+- `GGUF_GUIDE.md`
+- `BUILD_GUIDE.md`
+- `QUICK_REFERENCE.md`
+- `GITHUB_RELEASE_GUIDE.md`
+
+## Docs site
+
+Full documentation is also published at:
+
+- https://llamatelemetry.github.io/

@@ -1,14 +1,41 @@
 # Integration Guide
 
-This guide explains how to integrate llamatelemetry with your inference workflow.
+This guide summarizes common integrations for `llamatelemetry`.
 
-## Typical Flow
-1. Start llama.cpp server with `ServerManager`
-2. Use `LlamaCppClient` for inference
-3. Enable telemetry and export via OTLP
-4. Visualize spans using Graphistry
+## OpenTelemetry
 
-## Files to Reference
-- `docs/QUICK_START_GUIDE.md`
-- `docs/CONFIGURATION.md`
-- `docs/TROUBLESHOOTING.md`
+```python
+from llamatelemetry.telemetry import setup_telemetry
+
+tracer, meter = setup_telemetry(
+    service_name="llamatelemetry-demo",
+    otlp_endpoint="http://localhost:4317",
+    enable_llama_metrics=True,
+)
+```
+
+## Graphistry
+
+```python
+from llamatelemetry.graphistry.connector import GraphistryConnector
+
+connector = GraphistryConnector()
+connector.login()
+```
+
+## Kaggle
+
+```python
+from llamatelemetry.api import kaggle_t4_dual_config
+
+cfg = kaggle_t4_dual_config()
+print(cfg)
+```
+
+## Unsloth
+
+```python
+from llamatelemetry.unsloth import UnslothExporter
+
+exporter = UnslothExporter()
+```

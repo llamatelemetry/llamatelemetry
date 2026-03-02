@@ -1,98 +1,68 @@
 # llamatelemetry v0.1.0
 
-**CUDA-first OpenTelemetry Python SDK for LLM inference observability and explainability**
+**CUDA-first Python SDK for GGUF inference, telemetry, and Kaggle workflows**
 
-llamatelemetry is a CUDA-first OpenTelemetry Python SDK for LLM inference observability and GPU telemetry built around llama.cpp GGUF and NCCL multi-GPU workflows.
+`llamatelemetry` is a CUDA-first Python SDK for local LLM inference and observability around `llama.cpp`/GGUF. It provides a high-level inference engine, a robust `llama-server` lifecycle manager, OpenTelemetry instrumentation, Kaggle presets, Graphistry/RAPIDS hooks, and optional CUDA optimization utilities.
 
-Official repository: https://github.com/llamatelemetry/llamatelemetry  
+## What you get
 
-llamatelemetry combines:
-- **llama.cpp GGUF inference** - High-performance quantized model inference
-- **NCCL-aware multi-GPU execution** - Dual T4 tensor parallelism and split-GPU workflows
-- **OpenTelemetry traces + metrics** - Production-grade observability with OTLP export
-- **GPU analytics and visualization** - RAPIDS cuGraph + Graphistry interactive dashboards
+- High-level `InferenceEngine` for loading and running GGUF models
+- `ServerManager` for starting and monitoring `llama-server`
+- OpenAI-compatible `LlamaCppClient` for endpoint-level control
+- Model registry, GGUF metadata parsing, and quantization helpers
+- OpenTelemetry tracing + GPU metrics collection
+- Kaggle dual-T4 presets and environment helpers
+- 18 notebooks with cell-by-cell walkthroughs
 
-This repository is optimized for **Kaggle dual Tesla T4 notebooks** and small GGUF models (1B-5B parameters, Q4_K_M quantization). It ships lightweight Python code and downloads large CUDA binaries on first import.
+## Install
 
-## What You Get
-- **LLM request tracing** with semantic attributes and distributed context propagation
-- **GPU-aware metrics** (latency, tokens/sec, VRAM usage, temperature, power draw)
-- **Split-GPU workflow** (GPU 0: inference, GPU 1: analytics/visualization)
-- **Graph-based trace visualization** with Graphistry interactive dashboards
-- **Real-time performance monitoring** with live Plotly dashboards
-- **Production observability stack** with multi-layer telemetry collection
-- **16 comprehensive tutorials** covering foundation → advanced → production workflows
-
-## Quick Start (Kaggle Dual T4)
-```python
-!pip install -q --no-cache-dir --force-reinstall git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
-
-from huggingface_hub import hf_hub_download
-from llamatelemetry.server import ServerManager
-
-model_path = hf_hub_download(
-    repo_id="unsloth/gemma-3-1b-it-GGUF",
-    filename="gemma-3-1b-it-Q4_K_M.gguf",
-    local_dir="/kaggle/working/models",
-)
-
-server = ServerManager()
-server.start_server(
-    model_path=model_path,
-    gpu_layers=99,
-    tensor_split="1.0,0.0",
-    flash_attn=1,
-)
+```bash
+pip install --no-cache-dir --force-reinstall \
+  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
 ```
 
-## Kaggle Split-GPU + Observability
+## Quick start
+
 ```python
-from llamatelemetry.kaggle import KaggleEnvironment, split_gpu_session
-from llamatelemetry.telemetry import setup_grafana_otlp, InstrumentedLLMClient
+import llamatelemetry as lt
 
-env = KaggleEnvironment.setup(split_gpu_mode=True, enable_graphistry=False)
-tracer, meter = setup_grafana_otlp(service_name="llama-gguf")
-
-# GPU 0 for llama-server, GPU 1 for RAPIDS/Graphistry
-with split_gpu_session(llm_gpu=0, graph_gpu=1) as ctx:
-    engine = env.create_engine("gemma-3-1b-Q4_K_M", **ctx["llm_server_kwargs"])
-    result = engine.generate("Hello from split GPUs", max_tokens=64)
-    print(result.text)
-
-# Instrumented client for server API usage
-client = InstrumentedLLMClient("http://127.0.0.1:8090")
-resp = client.chat_completion(messages=[{"role": "user", "content": "Explain GGUF."}], max_tokens=128)
-print(resp.choices[0].message.content)
+engine = lt.InferenceEngine(enable_telemetry=False)
+engine.load_model("gemma-3-1b-Q4_K_M", auto_start=True)
+result = engine.infer("Explain CUDA in one sentence.", max_tokens=64)
+print(result.text)
 ```
 
-## Documentation Map
-Start here:
-- `docs/INDEX.md`
+## Kaggle quickstart (dual T4)
 
-Common entry points:
-- `docs/INSTALLATION.md`
-- `docs/QUICK_START_GUIDE.md`
-- `docs/ARCHITECTURE.md`
-- `docs/INTEGRATION_GUIDE.md`
-- `docs/NOTEBOOKS_GUIDE.md`
-- `docs/TROUBLESHOOTING.md`
+```python
+import llamatelemetry as lt
+from llamatelemetry.api import kaggle_t4_dual_config
 
-Notebooks (16 comprehensive tutorials):
-- `notebooks/README.md` - Notebooks overview
-- Foundation: Notebooks 01-04 (Quick start, server setup, multi-GPU, quantization)
-- Integration: Notebooks 05-06 (Unsloth, Graphistry split-GPU)
-- Advanced: Notebooks 07-10 (Knowledge graphs, workflows)
-- Deep Dive: Notebooks 11-13 (Neural network viz, attention, embeddings)
-- **Observability Trilogy**: Notebooks 14-16 (OpenTelemetry, real-time monitoring, production stack) ⭐ **NEW**
+cfg = kaggle_t4_dual_config()
+print(cfg)
 
-## Project Layout (High Level)
-- `llamatelemetry/` Python SDK
-- `csrc/` CUDA/C++ kernels and bindings
-- `docs/` Guides and references
-- `notebooks/` Authoritative notebook specs
-- `examples/` Minimal runnable examples
-- `scripts/` Build and release utilities
+engine = lt.InferenceEngine(enable_telemetry=False)
+engine.load_model("gemma-3-1b-Q4_K_M", auto_start=True)
+print(engine.generate("Kaggle dual-GPU test", max_tokens=32).text)
+```
 
-## Support and Contribution
+## Documentation
+
+- Docs site: https://llamatelemetry.github.io/
+- Get Started: `docs/INSTALLATION.md`, `docs/QUICK_START_GUIDE.md`
+- Core docs: `docs/ARCHITECTURE.md`, `docs/API_REFERENCE.md`
+- Notebooks: `notebooks/` (18 notebooks)
+
+## Project layout
+
+- `llamatelemetry/` Python package
+- `csrc/` CUDA/C++ sources
+- `docs/` documentation for mkdocs
+- `notebooks/` Kaggle-focused notebooks
+- `examples/` runnable examples
+- `tests/` test suite
+
+## Contributing
+
 - `CONTRIBUTING.md`
 - `CHANGELOG.md`

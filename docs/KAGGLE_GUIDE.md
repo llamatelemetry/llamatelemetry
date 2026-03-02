@@ -1,14 +1,57 @@
-# Kaggle Guide
+# Kaggle Guide (Dual T4)
 
-This guide summarizes the Kaggle workflow for llamatelemetry.
+This workflow targets Kaggle notebooks with **GPU T4 x2**. `llamatelemetry` is optimized for this environment and can automatically configure split-GPU workloads.
 
-## Recommended Flow
-1. Install the package (see `docs/INSTALLATION.md`)
-2. Download a small GGUF model (1B-5B)
-3. Start the server on GPU0
-4. Run inference via `LlamaCppClient`
-5. Capture telemetry and visualize with Graphistry on GPU1
+## 1) Enable GPUs in Kaggle
 
-## Notes
-- Prefer split-GPU: GPU0 inference, GPU1 analytics
-- Use explicit OTLP endpoints with `/v1/traces` and `/v1/metrics`
+- Notebook Settings → Accelerator → GPU (T4 x2)
+
+## 2) Install
+
+```python
+!pip -q install git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+```
+
+## 3) Validate the environment
+
+```python
+from llamatelemetry import detect_cuda
+print(detect_cuda())
+```
+
+## 4) Use Kaggle presets
+
+```python
+from llamatelemetry.api import kaggle_t4_dual_config
+
+cfg = kaggle_t4_dual_config()
+print(cfg)
+```
+
+## 5) Load a GGUF model
+
+```python
+import llamatelemetry as lt
+
+engine = lt.InferenceEngine(enable_telemetry=False)
+engine.load_model("gemma-3-1b-Q4_K_M", auto_start=True)
+```
+
+## 6) Run inference
+
+```python
+result = engine.infer("Summarize CUDA graphs.", max_tokens=96)
+print(result.text)
+```
+
+## 7) Optional: telemetry and metrics
+
+```python
+engine = lt.InferenceEngine(
+    enable_telemetry=True,
+    telemetry_config={
+        "service_name": "llamatelemetry-kaggle",
+        "enable_llama_metrics": True,
+    },
+)
+```

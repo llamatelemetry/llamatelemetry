@@ -1,10 +1,10 @@
 # llamatelemetry Notebooks
 
-**16 comprehensive Jupyter notebooks** covering LLM inference, observability, and visualization on Kaggle dual Tesla T4.
+**18 comprehensive Jupyter notebooks** covering LLM inference, observability, and visualization on Kaggle dual Tesla T4.
 
 ---
 
-## 📚 All Notebooks (5.5 hours total)
+## 📚 All Notebooks (core track ~5.5 hours + supplemental)
 
 ### **Phase 1: Foundation (Beginner)** - 65 minutes
 | # | Notebook | Time | Topics |
@@ -41,6 +41,14 @@
 | 14 | OpenTelemetry Observability | 45 min | Full OTel integration, OTLP export |
 | 15 | **Real-Time Monitoring** ⭐ | 30 min | Live Plotly dashboards, llama.cpp /metrics |
 | 16 | **Production Stack** ⭐ | 45 min | Complete observability (Graphistry + Plotly 2D/3D) |
+
+---
+
+### **Phase 6: Supplemental (Optional)**
+| # | Notebook | Time | Topics |
+|---|----------|------|--------|
+| 17 | W&B Kaggle Notebook | TBD | Experiment tracking and reporting |
+| 17 | OTel + Graphistry Trace Glue | TBD | Trace graph correlation and visualization |
 
 ---
 

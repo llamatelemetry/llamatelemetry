@@ -1,10 +1,30 @@
 # GGUF Guide
 
-This project targets GGUF models optimized for llama.cpp inference.
+This guide covers GGUF model inspection, validation, and quantization utilities.
 
-## Recommendations
-- 1B-5B models for Kaggle T4
-- Q4_K_M for best balance
+## Inspecting a GGUF file
 
-## Usage
-Use `huggingface_hub.hf_hub_download` to fetch the model, then start the server.
+```python
+from llamatelemetry.gguf_parser import GGUFReader
+
+with GGUFReader("model.gguf") as reader:
+    print(reader.metadata)
+    print(len(reader.tensors))
+```
+
+## Validating and summarizing
+
+```python
+from llamatelemetry.api.gguf import validate_gguf, get_model_summary
+
+print(validate_gguf("model.gguf"))
+print(get_model_summary("model.gguf"))
+```
+
+## Quantization helpers
+
+```python
+from llamatelemetry.api.gguf import get_recommended_quant
+
+print(get_recommended_quant(vram_gb=8, params_b=3))
+```

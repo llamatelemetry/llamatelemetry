@@ -1,10 +1,21 @@
 # Build Guide
 
-This guide covers building CUDA binaries for llamatelemetry.
+This guide covers building `llamatelemetry` from source.
 
-## Typical Flow
-- Build llama.cpp with CUDA 12
-- Bundle binaries for release distribution
-- Validate on Kaggle dual T4
+## Python package
 
-For scripts, see `scripts/` and the release workflow.
+```bash
+pip install -e .
+```
+
+## CUDA/C++ extensions
+
+```bash
+cmake -S . -B build
+cmake --build build
+```
+
+## Notes
+
+- The SDK is optimized for CUDA 12 and Kaggle T4 GPUs.
+- Ensure you have a compatible CUDA toolkit and compiler.
