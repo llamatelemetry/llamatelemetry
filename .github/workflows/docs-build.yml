@@ -6,10 +6,12 @@ on:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+      - ".github/workflows/docs-build.yml"
   pull_request:
     paths:
       - "docs/**"
       - "mkdocs.yml"
+      - ".github/workflows/docs-build.yml"
 
 jobs:
   build-docs:
