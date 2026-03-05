@@ -105,7 +105,9 @@ class EmbeddingEngine:
 
             if response.status_code == 200:
                 data = response.json()
-                embedding = np.array(data["data"][0]["embedding"], dtype=np.float32)
+                # NOTE: Keep this reference for standard OpenAI shape.
+                # embedding = np.array(data["data"][0]["embedding"], dtype=np.float32)
+                embedding = np.array(self._extract_embedding(data), dtype=np.float32)
 
                 if self.normalize:
                     embedding = embedding / np.linalg.norm(embedding)
@@ -132,7 +134,9 @@ class EmbeddingEngine:
 
             if response.status_code == 200:
                 data = response.json()
-                embedding = np.array(data["embedding"], dtype=np.float32)
+                # NOTE: Keep this reference for legacy native shape.
+                # embedding = np.array(data["embedding"], dtype=np.float32)
+                embedding = np.array(self._extract_embedding(data), dtype=np.float32)
 
                 if self.normalize:
                     embedding = embedding / np.linalg.norm(embedding)
@@ -147,6 +151,29 @@ class EmbeddingEngine:
             raise RuntimeError(f"Failed to generate embedding: {e}")
 
         raise RuntimeError("Embedding endpoint not available")
+
+    def _extract_embedding(self, data: Any) -> List[float]:
+        """
+        Extract embedding vector from multiple response shapes.
+
+        Supported shapes:
+        - OpenAI-style: {"data": [{"embedding": [...]}]}
+        - Native dict:  {"embedding": [...]}
+        - Native list:  [float, float, ...]
+        - List of dicts: [{"embedding": [...]}, ...]
+        """
+        if isinstance(data, dict):
+            if "data" in data and isinstance(data["data"], list) and data["data"]:
+                item = data["data"][0]
+                if isinstance(item, dict) and "embedding" in item:
+                    return item["embedding"]
+            if "embedding" in data:
+                return data["embedding"]
+        if isinstance(data, list):
+            if data and isinstance(data[0], dict) and "embedding" in data[0]:
+                return data[0]["embedding"]
+            return data
+        raise RuntimeError(f"Unknown embedding response shape: {type(data)}")
 
     def embed_batch(
         self,
