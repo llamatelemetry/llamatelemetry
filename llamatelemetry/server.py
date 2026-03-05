@@ -548,6 +548,10 @@ class ServerManager:
                 except Exception:
                     pass
 
+        # Prevent config objects from leaking into CLI args
+        kwargs.pop("multi_gpu_config", None)
+        kwargs.pop("nccl_config", None)
+
         # Find llama-server executable
         if self._server_path is None:
             self._server_path = self.find_llama_server()
@@ -730,6 +734,7 @@ class ServerManager:
                 cmd.extend([f"--{key.replace('_', '-')}", str(value)])
 
         if verbose:
+            print(f"  Command: {' '.join(cmd)}")
             print(f"Starting llama-server...")
             print(f"  Executable: {self._server_path}")
             print(f"  Model: {model_path_obj.name}")
