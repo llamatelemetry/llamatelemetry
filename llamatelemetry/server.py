@@ -17,7 +17,7 @@ import subprocess
 import time
 import signal
 from pathlib import Path
-import requests
+
 
 
 class ServerManager:
@@ -426,6 +426,10 @@ class ServerManager:
             FileNotFoundError: If llama-server executable not found
             RuntimeError: If server fails to start or GPU is incompatible
         """
+        # Guard against config objects leaking into CLI kwargs
+        kwargs.pop("multi_gpu_config", None)
+        kwargs.pop("nccl_config", None)
+
         # Check GPU compatibility (only if using GPU layers)
         if gpu_layers > 0 and not skip_gpu_check:
             from .utils import check_gpu_compatibility
