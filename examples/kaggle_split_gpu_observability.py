@@ -20,7 +20,7 @@ def main():
         print(result.text)
 
     # Instrumented client for llama-server OpenAI-compatible endpoints
-    client = InstrumentedLLMClient("http://127.0.0.1:8090")
+    client = InstrumentedLLMClient("http://127.0.0.1:8080")
     resp = client.chat_completion(
         messages=[{"role": "user", "content": "Explain GGUF in one paragraph."}],
         max_tokens=128,

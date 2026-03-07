@@ -13,7 +13,7 @@
 
 ```python
 engine = InferenceEngine(
-    server_url="http://127.0.0.1:8090",
+    server_url="http://127.0.0.1:8080",
     enable_telemetry=True,
     telemetry_config={
         "service_name": "llamatelemetry",

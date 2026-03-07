@@ -46,7 +46,7 @@ class ServerManager:
         {"version": "0.1.1", "filename": "llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz", "label": "primary"},
     ]
 
-    def __init__(self, server_url: str = "http://127.0.0.1:8090"):
+    def __init__(self, server_url: str = "http://127.0.0.1:8080"):
         """
         Initialize the server manager.
 
@@ -378,7 +378,7 @@ class ServerManager:
     def start_server(
         self,
         model_path: str,
-        port: int = 8090,
+        port: int = 8080,
         host: str = "127.0.0.1",
         gpu_layers: int = 99,
         ctx_size: int = 2048,
@@ -401,7 +401,7 @@ class ServerManager:
 
         Args:
             model_path: Path to GGUF model file
-            port: Server port (default: 8090)
+            port: Server port (default: 8080)
             host: Server host (default: 127.0.0.1)
             gpu_layers: Number of layers to offload to GPU (default: 99)
             ctx_size: Context size (default: 2048)

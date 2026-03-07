@@ -361,8 +361,8 @@ def create_config_file(config_path: Optional[Path] = None) -> Path:
 
     default_config = {
         'server': {
-            'url': 'http://127.0.0.1:8090',
-            'port': 8090,
+            'url': 'http://127.0.0.1:8080',
+            'port': 8080,
             'host': '127.0.0.1',
             'auto_start': True,
         },

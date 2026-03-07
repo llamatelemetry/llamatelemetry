@@ -129,7 +129,7 @@ def test_server_manager_creation():
     
     # Test with default URL
     manager = ServerManager()
-    assert manager.server_url == "http://127.0.0.1:8090"
+    assert manager.server_url == "http://127.0.0.1:8080"
     assert manager.server_process is None
     
     # Test with custom URL

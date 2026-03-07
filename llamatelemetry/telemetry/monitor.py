@@ -381,7 +381,7 @@ class PerformanceMonitor:
 
     def record_metrics_from_llama_server(
         self,
-        server_url: str = "http://127.0.0.1:8090",
+        server_url: str = "http://127.0.0.1:8080",
         metrics_text: Optional[str] = None,
         timeout: float = 5.0,
     ) -> Dict[str, float]:

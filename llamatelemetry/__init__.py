@@ -229,7 +229,7 @@ class InferenceEngine:
         >>> print(result.text)
 
         Connect to existing server:
-        >>> engine = InferenceEngine(server_url="http://127.0.0.1:8090")
+        >>> engine = InferenceEngine(server_url="http://127.0.0.1:8080")
         >>> result = engine.infer("What is AI?", max_tokens=100)
         >>> print(result.text)
 
@@ -241,7 +241,7 @@ class InferenceEngine:
 
     def __init__(
         self,
-        server_url: str = "http://127.0.0.1:8090",
+        server_url: str = "http://127.0.0.1:8080",
         enable_telemetry: bool = False,
         telemetry_config: Optional[Dict[str, Any]] = None,
     ):
@@ -249,7 +249,7 @@ class InferenceEngine:
         Initialize the inference engine.
 
         Args:
-            server_url: URL of llama-server backend (default: http://127.0.0.1:8090)
+            server_url: URL of llama-server backend (default: http://127.0.0.1:8080)
         """
         self.server_url = server_url
         self._model_loaded = False
@@ -986,7 +986,7 @@ def quick_infer(
     prompt: str,
     model_path: Optional[str] = None,
     max_tokens: int = 128,
-    server_url: str = "http://127.0.0.1:8090",
+    server_url: str = "http://127.0.0.1:8080",
     auto_start: bool = True,
 ) -> str:
     """
