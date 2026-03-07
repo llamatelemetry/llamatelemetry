@@ -39,10 +39,9 @@ GITHUB_RELEASE_URL = "https://github.com/llamatelemetry/llamatelemetry/releases/
 HF_BINARIES_REPO = "waqasm86/llamatelemetry-binaries"  # Binary bundles (~961 MB)
 HF_MODELS_REPO = "waqasm86/llamatelemetry-models"      # GGUF models
 
-# SHA256 checksums for integrity verification
-BINARY_CHECKSUMS = {
-    "llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz": "31889a86116818be5a42a7bd4a20fde14be25f27348cabf2644259625374b355",
-}
+# SHA256 checksum suffix
+CHECKSUM_SUFFIX = ".sha256"
+
 
 # Binary bundle preference order (HuggingFace primary → GitHub fallback)
 BINARY_BUNDLE_CANDIDATES = [
@@ -106,21 +105,17 @@ def detect_gpu_compute_capability() -> Optional[Tuple[str, str]]:
 def detect_platform() -> str:
     """
     Detect execution platform (local, colab, kaggle).
-
-    Returns:
-        Platform name: "colab", "kaggle", or "local"
     """
-    # Legacy environment check (not supported in v0.1.1 runtime)
+    # Kaggle first (Kaggle has google.colab installed)
+    if os.path.exists("/kaggle") or os.environ.get("KAGGLE_KERNEL_RUN_TYPE"):
+        return "kaggle"
+
+    # Colab
     try:
         import google.colab
-
         return "colab"
     except ImportError:
         pass
-
-    # Check for Kaggle
-    if os.path.exists("/kaggle"):
-        return "kaggle"
 
     return "local"
 
@@ -161,20 +156,20 @@ def verify_gpu_compatibility(gpu_name: str, compute_cap: str) -> bool:
         print("  Compatible environment:")
         print("    - Kaggle notebooks (dual Tesla T4)")
         print()
-        print("  llamatelemetry v0.1.1 requires Kaggle dual Tesla T4 (SM 7.5)")
+        print(f"  llamatelemetry v{BINARY_VERSION} requires Kaggle dual Tesla T4 (SM 7.5)")
         print()
         print("=" * 70)
         raise RuntimeError(f"GPU compute capability {compute_cap} < {MIN_COMPUTE_CAPABILITY} (minimum required)")
 
     # Tesla T4 verification
     if cc_float == 7.5 and "t4" in gpu_lower:
-        print(f"  ✅ Tesla T4 detected - Perfect for llamatelemetry v0.1.1!")
+        print(f"  ✅ Tesla T4 detected - Perfect for llamatelemetry v{BINARY_VERSION}!")
     elif cc_float == 7.5:
         print(f"  ⚠️  {gpu_name} (SM {compute_cap}) - May work but not tested")
-        print(f"      llamatelemetry v0.1.1 is optimized exclusively for Tesla T4")
+        print(f"      llamatelemetry v{BINARY_VERSION} is optimized exclusively for Tesla T4")
     else:
         print(f"  ⚠️  {gpu_name} (SM {compute_cap}) - Not tested")
-        print(f"      llamatelemetry v0.1.1 is designed for Tesla T4 (SM 7.5)")
+        print(f"      llamatelemetry v{BINARY_VERSION} is designed for Tesla T4 (SM 7.5)")
 
     return True
 
@@ -281,6 +276,78 @@ def verify_sha256(file_path: Path, expected_hash: str) -> bool:
     return actual_hash == expected_hash
 
 
+def _parse_checksum_text(text: str) -> Optional[str]:
+    """
+    Parse a .sha256 file content and return the hash string.
+    Accepts formats like: "<hash> <filename>" or just "<hash>".
+    """
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split()
+        if parts and all(c in "0123456789abcdef" for c in parts[0].lower()):
+            return parts[0].lower()
+    return None
+
+
+def _download_checksum_from_hf(hf_path: str) -> Optional[str]:
+    if not HF_AVAILABLE:
+        return None
+    try:
+        downloaded_path = hf_hub_download(
+            repo_id=HF_BINARIES_REPO,
+            filename=hf_path,
+            repo_type="model",
+            local_dir=CACHE_DIR,
+            local_dir_use_symlinks=False,
+        )
+        text = Path(downloaded_path).read_text(encoding="utf-8")
+        return _parse_checksum_text(text)
+    except Exception:
+        return None
+
+
+def _download_checksum_from_github(url: str, dest_path: Path) -> Optional[str]:
+    try:
+        download_file(url, dest_path, "Downloading checksum")
+        text = dest_path.read_text(encoding="utf-8")
+        return _parse_checksum_text(text)
+    except Exception:
+        return None
+
+
+def get_expected_checksum(bundle_name: str, version: str, source: str) -> Optional[str]:
+    """
+    Resolve expected checksum dynamically from adjacent .sha256 file
+    hosted alongside the bundle (HuggingFace preferred, GitHub fallback).
+    """
+    checksum_name = f"{bundle_name}{CHECKSUM_SUFFIX}"
+
+    # Try HuggingFace first if source says hf
+    if source == "huggingface":
+        hf_path = f"v{version}/{checksum_name}"
+        checksum = _download_checksum_from_hf(hf_path)
+        if checksum:
+            return checksum
+
+    # Try GitHub checksum
+    gh_url = f"{GITHUB_RELEASE_URL}/v{version}/{checksum_name}"
+    cache_checksum = CACHE_DIR / checksum_name
+    checksum = _download_checksum_from_github(gh_url, cache_checksum)
+    if checksum:
+        return checksum
+
+    # Fallback: if HF wasn't tried first, attempt HF now
+    if source != "huggingface":
+        hf_path = f"v{version}/{checksum_name}"
+        checksum = _download_checksum_from_hf(hf_path)
+        if checksum:
+            return checksum
+
+    return None
+
+
 def download_from_huggingface(hf_path: str, dest_path: Path, desc: str = "Downloading") -> bool:
     """
     Download file from HuggingFace Hub with resume support.
@@ -345,7 +412,7 @@ def download_t4_binaries() -> None:
         return
 
     print("=" * 70)
-    print("🎯 llamatelemetry v0.1.1 First-Time Setup - Kaggle 2× T4 Multi-GPU")
+    print(f"🎯 llamatelemetry v{BINARY_VERSION} First-Time Setup - Kaggle 2× T4 Multi-GPU")
     print("=" * 70)
     print()
 
@@ -366,7 +433,7 @@ def download_t4_binaries() -> None:
     else:
         print("❌ No NVIDIA GPU detected")
         print()
-        print("llamatelemetry v0.1.1 requires Tesla T4 (SM 7.5) on Kaggle dual-GPU")
+        print(f"llamatelemetry v{BINARY_VERSION} requires Tesla T4 (SM 7.5) on Kaggle dual-GPU")
         raise RuntimeError("No compatible NVIDIA GPU found")
 
     print(f"🌐 Platform: {platform.capitalize()}")
@@ -419,15 +486,17 @@ def download_t4_binaries() -> None:
             print(f"✅ Using cached archive: {cache_tarball}")
 
         # Verify SHA256 checksum if available
-        expected_hash = BINARY_CHECKSUMS.get(bundle_name)
+        expected_hash = get_expected_checksum(bundle_name, version, source)
         if expected_hash:
-            print(f"🔐 Verifying SHA256 checksum...")
+            print("🔐 Verifying SHA256 checksum...")
             if not verify_sha256(cache_tarball, expected_hash):
-                print(f"   ❌ Checksum mismatch! Deleting corrupted file.")
+                print("   ❌ Checksum mismatch! Deleting corrupted file.")
                 cache_tarball.unlink()
                 failures.append(f"SHA256 verification failed for {bundle_name}")
                 continue
-            print(f"   ✅ Checksum verified")
+            print("   ✅ Checksum verified")
+        else:
+            print("⚠️  No checksum available; skipping verification.")
 
         temp_extract_dir = CACHE_DIR / f"extract_{version}"
         if temp_extract_dir.exists():
