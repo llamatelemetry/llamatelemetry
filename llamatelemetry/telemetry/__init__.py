@@ -112,8 +112,12 @@ def setup_telemetry(
         return None, None
 
     from .tracer import InferenceTracerProvider
-    from .metrics import GpuMetricsCollector
+    from .metrics import GpuMetricsCollector  # This imports your local metrics.py
     from .exporter import build_exporters
+
+    # FIX: Import OTel metrics with an alias to prevent collision with local metrics.py
+    from opentelemetry import metrics as otel_metrics 
+    from opentelemetry.sdk.metrics import MeterProvider
 
     # Build resource with GPU info
     from .resource import build_gpu_resource
@@ -134,7 +138,9 @@ def setup_telemetry(
 
     # Create MeterProvider
     meter_provider = MeterProvider(resource=resource)
-    metrics.set_meter_provider(meter_provider)
+    
+    # FIX: Use the aliased name 'otel_metrics' instead of 'metrics'
+    otel_metrics.set_meter_provider(meter_provider)
 
     # Start GPU metrics collector
     global _GPU_COLLECTOR
