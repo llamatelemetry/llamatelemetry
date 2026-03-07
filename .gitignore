@@ -200,6 +200,9 @@ notebooks-executed/
 # Local notebooks - personal/development notebooks (not for GitHub)
 notebooks-local/
 
+# Test notebooks - local testing outputs
+notebooks-testing/
+
 # Other notebooks practice - local practice files
 llamatelemetry-other-notebooks-practice/
 # Kaggle execution outputs
