@@ -19,7 +19,7 @@ from ..telemetry.client import InstrumentedLlamaCppClient
 @dataclass
 class KagglePipelineConfig:
     service_name: str = "llamatelemetry"
-    service_version: str = "0.1.0"
+    service_version: str = "0.1.1"
     otlp_endpoint: Optional[str] = None
     enable_graphistry: bool = False
     graphistry_server: Optional[str] = None

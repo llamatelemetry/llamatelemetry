@@ -84,10 +84,10 @@ If you have admin access, you can also do everything via web:
 1. Go to https://huggingface.co/llamatelemetry/binaries
 2. Click "Files and versions"
 3. Click "Add file" → "Upload files"
-4. Create folder: `v0.1.0/`
+4. Create folder: `v0.1.1/`
 5. Upload both files:
-   - `llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz`
-   - `llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz.sha256`
+   - `llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz`
+   - `llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz.sha256`
 
 ## Troubleshooting
 

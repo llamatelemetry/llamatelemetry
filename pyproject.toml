@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "llamatelemetry"
-version = "0.1.0"
+version = "0.1.1"
 description = "CUDA-first OpenTelemetry Python SDK for LLM inference observability. GPU-native telemetry for quantized LLM inference pipelines with multi-GPU NCCL, GGUF/llama.cpp runtimes, and real-time graph-based introspection via pygraphistry. Vendor-neutral OTLP export."
 readme = "README.md"
 requires-python = ">=3.11"

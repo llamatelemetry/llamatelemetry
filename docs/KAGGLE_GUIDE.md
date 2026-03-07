@@ -9,7 +9,7 @@ This workflow targets Kaggle notebooks with **GPU T4 x2**. `llamatelemetry` is o
 ## 2) Install
 
 ```python
-!pip -q install git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+!pip -q install git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ## 3) Validate the environment

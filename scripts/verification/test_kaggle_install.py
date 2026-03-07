@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 """
-Test llamatelemetry v0.1.0 installation workflow (simulates Kaggle environment)
+Test llamatelemetry v0.1.1 installation workflow (simulates Kaggle environment)
 """
 
 print("=" * 70)
-print("llamatelemetry v0.1.0 - Kaggle Installation Test")
+print("llamatelemetry v0.1.1 - Kaggle Installation Test")
 print("=" * 70)
 print()
 
 # Step 1: Simulate pip install
-print("📦 Step 1: Installing llamatelemetry v0.1.0 from GitHub...")
+print("📦 Step 1: Installing llamatelemetry v0.1.1 from GitHub...")
 print("    Command: pip install --no-cache-dir --force-reinstall \\")
-print("             git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0")
+print("             git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1")
 print()
 
 # Step 2: Import and verify

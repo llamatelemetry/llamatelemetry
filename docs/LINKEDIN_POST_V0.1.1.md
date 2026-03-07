@@ -1,4 +1,4 @@
-# LinkedIn Blog Post — llamatelemetry v0.1.0
+# LinkedIn Blog Post — llamatelemetry v0.1.1
 
 ---
 
@@ -6,11 +6,11 @@
 
 ---
 
-From GeForce 940M to Kaggle dual Tesla T4 — llamatelemetry v0.1.0 is here.
+From GeForce 940M to Kaggle dual Tesla T4 — llamatelemetry v0.1.1 is here.
 
 Last time I wrote about llamatelemetry, it was a proof of concept: local CUDA 12 inference on a GeForce 940M, VRAM down from 820 MB to 200 MB, 42 tok/s on a consumer GPU. The core hypothesis was right — GGUF quantization + llama.cpp makes serious LLM inference accessible without cloud spend.
 
-v0.1.0 flips the script. Same philosophy, different scale.
+v0.1.1 flips the script. Same philosophy, different scale.
 
 **What changed:**
 

@@ -1,5 +1,5 @@
 """
-Unit tests for llamatelemetry v0.1.0 APIs
+Unit tests for llamatelemetry v0.1.1 APIs
 
 Tests quantization, unsloth, cuda, and inference APIs.
 """

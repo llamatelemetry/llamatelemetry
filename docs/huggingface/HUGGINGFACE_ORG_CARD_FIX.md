@@ -64,9 +64,9 @@ This approach:
 
 **Working URLs:**
 - GitHub: https://github.com/llamatelemetry/llamatelemetry ✅
-- GitHub Releases: https://github.com/llamatelemetry/llamatelemetry/releases/tag/v0.1.0 ✅
+- GitHub Releases: https://github.com/llamatelemetry/llamatelemetry/releases/tag/v0.1.1 ✅
 - HuggingFace Binaries: https://huggingface.co/waqasm86/llamatelemetry-binaries ✅
-- Installation: `pip install git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0` ✅
+- Installation: `pip install git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1` ✅
 
 **Not Working:**
 - Organization page: https://huggingface.co/llamatelemetry (empty, but not critical)

@@ -1,4 +1,4 @@
-# llamatelemetry v0.1.0
+# llamatelemetry v0.1.1
 
 **CUDA-first Python SDK for GGUF inference, telemetry, and Kaggle workflows**
 
@@ -18,7 +18,7 @@
 
 ```bash
 pip install --no-cache-dir --force-reinstall \
-  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ## Quick start

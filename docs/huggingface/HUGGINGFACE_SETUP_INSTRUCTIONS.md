@@ -64,9 +64,9 @@ The current setup (`waqasm86/llamatelemetry-binaries`) is fully functional. End-
 
 These URLs are already operational:
 
-- **GitHub Releases**: https://github.com/llamatelemetry/llamatelemetry/releases/tag/v0.1.0
+- **GitHub Releases**: https://github.com/llamatelemetry/llamatelemetry/releases/tag/v0.1.1
 - **HuggingFace Binaries**: https://huggingface.co/waqasm86/llamatelemetry-binaries
-- **Binary Download**: https://huggingface.co/waqasm86/llamatelemetry-binaries/resolve/main/v0.1.0/llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz
+- **Binary Download**: https://huggingface.co/waqasm86/llamatelemetry-binaries/resolve/main/v0.1.1/llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz
 
 The installation workflow works correctly with the current setup.
 

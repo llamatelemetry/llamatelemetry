@@ -11,12 +11,12 @@ import sys
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 REPO_ID = "llamatelemetry/binaries"
 REPO_TYPE = "model"
-VERSION = "v0.1.0"
+VERSION = "v0.1.1"
 
-RELEASE_DIR = "/media/waqasm86/External1/Project-Nvidia-Office/llamatelemetry/releases/v0.1.0"
+RELEASE_DIR = "/media/waqasm86/External1/Project-Nvidia-Office/llamatelemetry/releases/v0.1.1"
 FILES_TO_UPLOAD = [
-    "llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz",
-    "llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz.sha256",
+    "llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz",
+    "llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz.sha256",
 ]
 
 def main():
@@ -86,7 +86,7 @@ Official pre-compiled CUDA binaries for **llamatelemetry** - CUDA-first OpenTele
 
 | File | Size | Target | SHA256 |
 |------|------|--------|--------|
-| llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz | 1.4 GB | Kaggle 2× T4, CUDA 12.5 | 31889a86... |
+| llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz | 1.4 GB | Kaggle 2× T4, CUDA 12.5 | 31889a86... |
 
 ## 🚀 Auto-Download
 
@@ -94,7 +94,7 @@ These binaries are automatically downloaded when you install llamatelemetry:
 
 ```bash
 pip install --no-cache-dir --force-reinstall \\
-    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 On first `import llamatelemetry`, the package will:
@@ -111,7 +111,7 @@ from huggingface_hub import hf_hub_download
 
 binary_path = hf_hub_download(
     repo_id="{REPO_ID}",
-    filename="v0.1.0/llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz",
+    filename="v0.1.1/llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz",
     cache_dir="/kaggle/working/cache"
 )
 ```

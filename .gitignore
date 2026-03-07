@@ -1,5 +1,5 @@
 # ============================================================================
-# llamatelemetry v0.1.0 .gitignore
+# llamatelemetry v0.1.1 .gitignore
 # ============================================================================
 # Keep repo lightweight - no binaries, large files, or build artifacts
 # ============================================================================
@@ -105,6 +105,8 @@ notebooks-local-2/
 
 # Local assets - reference files not for GitHub
 llamatelemetry-assets/
+# Local releases (excluded)
+llamatelemetry-releases-not-inlcluded/
 
 # Personal notes (local only)
 notes/

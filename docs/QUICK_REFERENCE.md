@@ -4,7 +4,7 @@
 
 ```bash
 pip install --no-cache-dir --force-reinstall \
-  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ## Quick inference

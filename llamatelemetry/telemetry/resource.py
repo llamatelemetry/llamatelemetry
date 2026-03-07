@@ -155,7 +155,7 @@ def _llama_server_props(server_url: Optional[str], timeout: float = 2.0) -> Dict
 
 def build_gpu_resource(
     service_name: str = "llamatelemetry",
-    service_version: str = "0.1.0",
+    service_version: str = "0.1.1",
     llama_server_url: Optional[str] = None,
     llama_server_path: Optional[str] = None,
 ):
@@ -178,8 +178,8 @@ def build_gpu_resource(
     attributes: Dict[str, Any] = {
         "service.name": service_name,
         "service.version": service_version,
-        "llamatelemetry.version": "0.1.0",
-        "llamatelemetry.binary_version": "0.1.0",  # llama.cpp artifact version
+        "llamatelemetry.version": "0.1.1",
+        "llamatelemetry.binary_version": "0.1.1",  # llama.cpp artifact version
     }
 
     # Add GPU info

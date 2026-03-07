@@ -43,7 +43,7 @@ class ServerManager:
     # Binary bundles used when bootstrap-installed binaries are missing
     _BINARY_RELEASE_BASE = "https://github.com/llamatelemetry/llamatelemetry/releases/download"
     _BINARY_BUNDLES = [
-        {"version": "0.1.0", "filename": "llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz", "label": "primary"},
+        {"version": "0.1.1", "filename": "llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz", "label": "primary"},
     ]
 
     def __init__(self, server_url: str = "http://127.0.0.1:8090"):

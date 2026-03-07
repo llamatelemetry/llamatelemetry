@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.1.0] - 2026-02-02
+## [0.1.1] - 2026-02-07
 ### Added
 - Initial public release of the `llamatelemetry` Python SDK.
 - CUDA-first inference workflow optimized for Kaggle dual Tesla T4.

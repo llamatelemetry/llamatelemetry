@@ -132,7 +132,7 @@ This directory contains:
 
 1. **Installation:**
    ```python
-   !pip install -q --no-cache-dir git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+   !pip install -q --no-cache-dir git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
    ```
 
 2. **Start with Notebook 01** for basic setup

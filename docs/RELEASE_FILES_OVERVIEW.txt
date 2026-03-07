@@ -1,14 +1,14 @@
 ╔═══════════════════════════════════════════════════════════════════════════════╗
-║                   llamatelemetry v0.1.0 Release - Files Overview                      ║
+║                   llamatelemetry v0.1.1 Release - Files Overview                      ║
 ╚═══════════════════════════════════════════════════════════════════════════════╝
 
 📁 LOCATION: GitHub Releases at https://github.com/llamatelemetry/llamatelemetry/releases
 
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│ 🎯 MAIN RELEASE FILE (v0.1.0)                                              │
+│ 🎯 MAIN RELEASE FILE (v0.1.1)                                              │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-  📦 llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz      [~961 MB]
+  📦 llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz      [~961 MB]
      ├─ SHA256: 489f3df54bac24d3801af3149c346402bea099d2bd8793897aa606c5c8af0025
      ├─ Contents: bin/ (llama-server + tools)
      └─ Contents: lib/ (CUDA libraries)
@@ -23,8 +23,8 @@
 │ ✅ RELEASE CHECKLIST                                                        │
 └─────────────────────────────────────────────────────────────────────────────┘
 
-[ ] Create GitHub Release (tag v0.1.0)
-[ ] Upload llamatelemetry-v0.1.0-cuda12-kaggle-t4x2.tar.gz
+[ ] Create GitHub Release (tag v0.1.1)
+[ ] Upload llamatelemetry-v0.1.1-cuda12-kaggle-t4x2.tar.gz
 [ ] Verify installation on Kaggle dual T4
 [ ] Confirm binaries auto-download on first import
 

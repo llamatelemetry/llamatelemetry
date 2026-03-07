@@ -240,7 +240,7 @@ After Build: Upload to GitHub Releases
 
 1. Download the .tar.gz file from Kaggle
 2. Go to: https://github.com/waqasm86/llamatelemetry/releases
-3. Create new release: v0.1.0
+3. Create new release: v0.1.1
 4. Upload: llamatelemetry-binaries-cuda12-t4.tar.gz
 5. Add release notes describing T4 optimizations
 

@@ -11,7 +11,7 @@
 
 ```bash
 pip install --no-cache-dir --force-reinstall \
-  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+  git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ## Install from source (dev)
@@ -36,7 +36,7 @@ pip install -e .
 ```python
 import llamatelemetry as lt
 
-print(lt.__version__)  # expected: 0.1.0
+print(lt.__version__)  # expected: 0.1.1
 print(lt.check_cuda_available())
 ```
 

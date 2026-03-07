@@ -2,16 +2,16 @@
 
 Short descriptions for each notebook in the current flow.
 
-1. `01-quickstart-llamatelemetry-v0-1-0-e1.ipynb` - Quickstart: install, GPU check, load model, run inference
-2. `02-llama-server-setup-llamatelemetry-v0-1-0-e1.ipynb` - ServerManager setup + /health /props /slots /metrics
-3. `03-multi-gpu-inference-llamatelemetry-v0-1-0-e1.ipynb` - Multi-GPU config (SplitMode, NCCLConfig, split_gpu_session)
-4. `04-gguf-quantization-llamatelemetry-v0-1-0-e1.ipynb` - GGUF reports, suitability checks, quantization matrix
-5. `05-unsloth-integration-llamatelemetry-v0-1-0-e1.ipynb` - Unsloth fine-tune + GGUF export workflow
-6. `06-split-gpu-graphistry-llamatelemetry-v0-1-0-e1.ipynb` - Split GPU session + Graphistry knowledge graph basics
-7. `07-knowledge-graph-extraction-graphistry-v0-1-0-e1.ipynb` - Knowledge graph builder with entities and relationships
+1. `01-quickstart-llamatelemetry-v0-1-1-e1.ipynb` - Quickstart: install, GPU check, load model, run inference
+2. `02-llama-server-setup-llamatelemetry-v0-1-1-e1.ipynb` - ServerManager setup + /health /props /slots /metrics
+3. `03-multi-gpu-inference-llamatelemetry-v0-1-1-e1.ipynb` - Multi-GPU config (SplitMode, NCCLConfig, split_gpu_session)
+4. `04-gguf-quantization-llamatelemetry-v0-1-1-e1.ipynb` - GGUF reports, suitability checks, quantization matrix
+5. `05-unsloth-integration-llamatelemetry-v0-1-1-e1.ipynb` - Unsloth fine-tune + GGUF export workflow
+6. `06-split-gpu-graphistry-llamatelemetry-v0-1-1-e1.ipynb` - Split GPU session + Graphistry knowledge graph basics
+7. `07-knowledge-graph-extraction-graphistry-v0-1-1-e1.ipynb` - Knowledge graph builder with entities and relationships
 8. `08-document-network-analysis-graphistry-e1.ipynb` - Document similarity network graph
 9. `09-large-models-kaggle-llamatelemetry-e3.ipynb` - Large model suitability + server presets
-10. `10-complete-workflow-llamatelemetry-v0-1-0-e1.ipynb` - End-to-end Kaggle pipeline (OTLP + preset + client)
+10. `10-complete-workflow-llamatelemetry-v0-1-1-e1.ipynb` - End-to-end Kaggle pipeline (OTLP + preset + client)
 11. `11-gguf-neural-network-graphistry-vis-executed-e1.ipynb` - GGUF metadata + embedding kNN graph visualization
 12. `12-gguf-attention-mechanism-explorer-executed-e1.ipynb` - Attention weight matrix graph exploration
 13. `13-gguf-token-embedding-visualizer-executed-e1.ipynb` - Token embedding kNN visualization with clusters

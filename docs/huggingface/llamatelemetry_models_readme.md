@@ -21,7 +21,7 @@ Curated collection of GGUF models optimized for **llamatelemetry** on Kaggle dua
 ## 🎯 About This Repository
 
 This repository contains GGUF models tested and verified to work with:
-- **llamatelemetry v0.1.0** - CUDA-first OpenTelemetry Python SDK for LLM inference observability
+- **llamatelemetry v0.1.1** - CUDA-first OpenTelemetry Python SDK for LLM inference observability
 - **Platform**: Kaggle Notebooks (2× Tesla T4, 30GB total VRAM)
 - **CUDA**: 12.5
 
@@ -29,7 +29,7 @@ This repository contains GGUF models tested and verified to work with:
 
 > **Status**: Repository created, models coming soon!
 
-### Planned Models (v0.1.0)
+### Planned Models (v0.1.1)
 
 | Model | Size | Quantization | VRAM | Speed (tok/s) | Status |
 |-------|------|--------------|------|---------------|--------|
@@ -55,7 +55,7 @@ Models in this repository are:
 ```bash
 # On Kaggle with GPU T4 × 2
 pip install --no-cache-dir --force-reinstall \
-    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ### Download and Run a Model

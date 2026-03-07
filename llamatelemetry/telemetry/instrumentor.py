@@ -64,7 +64,7 @@ class LlamaCppClientInstrumentor(BaseInstrumentor):
 
     def instrumentation_dependencies(self) -> Collection[str]:
         """Return required packages for instrumentation."""
-        return ["llamatelemetry >= 0.1.0"]
+        return ["llamatelemetry >= 0.1.1"]
 
     def instrument(
         self,
@@ -109,7 +109,7 @@ class LlamaCppClientInstrumentor(BaseInstrumentor):
 
         self._tracer = tracer_provider.get_tracer(
             "llamatelemetry.instrumentor",
-            "0.1.0"
+            "0.1.1"
         )
 
         # Store original methods

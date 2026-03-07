@@ -1,35 +1,84 @@
-# MANIFEST.in for llamatelemetry v0.1.0
+# MANIFEST.in for llamatelemetry v0.1.1
+# Controls what files are packaged in the source distribution (sdist).
 
-# Documentation
+# =============================================================================
+# CORE METADATA
+# =============================================================================
 include README.md
 include LICENSE
 include CHANGELOG.md
-
-# Build metadata
 include pyproject.toml
 include setup.py
+include MANIFEST.in
 
-# Python package files
+# =============================================================================
+# SOURCE CODE INCLUSION
+# =============================================================================
+# Include all Python source files recursively
 recursive-include llamatelemetry *.py
-recursive-include llamatelemetry/_internal *.py
-recursive-include llamatelemetry/core *.py
+
+# Include test files (optional, but good for validation)
 recursive-include tests *.py
 
-# EXCLUDE binaries, libraries, models, and archives
+# =============================================================================
+# CRITICAL EXCLUSIONS (Fixes Version Mismatch & Bloat)
+# =============================================================================
+
+# 1. PREVENT BYTECODE/CACHE INCLUSION (Critical Fix)
+# This ensures old cached logic doesn't overwrite your new v0.1.1 code.
+recursive-exclude * __pycache__
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *.pyd
+
+# 2. EXCLUDE HEAVY ASSETS & BINARIES
+# Binaries and libraries are handled via hybrid bootstrap download,
+# or excluded to keep the pip package lightweight.
 recursive-exclude llamatelemetry/binaries *
 recursive-exclude llamatelemetry/lib *
 recursive-exclude llamatelemetry/models *
+
+# 3. EXCLUDE BINARY FILE TYPES GLOBALLY
 global-exclude *.gguf
 global-exclude *.tar.gz
+global-exclude *.zip
 global-exclude *.so
 global-exclude *.so.*
+global-exclude *.dll
+global-exclude *.dylib
 
-# Exclude unwanted files
-global-exclude *.pyc
-global-exclude *.pyo
-global-exclude __pycache__
+# =============================================================================
+# PRUNE NON-ESSENTIAL DIRECTORIES
+# =============================================================================
+# These directories are for development/demo purposes only.
+# 'prune' completely removes the directory from the package scan.
+prune archive
+prune docs
+prune site
+prune scripts
+prune notes
+prune examples
+prune notebooks
+prune notebooks-archived
+prune notebooks-executed
+prune notebooks-local
+prune notebooks-testing
+prune llamatelemetry-assets
+prune llamatelemetry-kaggle-executions
+prune llamatelemetry-other-notebooks-practice
+prune llamatelemetry-pdf-portfolio
+prune releases
+prune claude-chat-history
+prune build
+prune dist
+
+# =============================================================================
+# MISC JUNK EXCLUSION
+# =============================================================================
 global-exclude .DS_Store
 global-exclude .git*
+global-exclude .gitignore
 global-exclude *.swp
 global-exclude *.bak
 global-exclude *~
+global-exclude *.ipynb_checkpoints

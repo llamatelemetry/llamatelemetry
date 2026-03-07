@@ -118,7 +118,7 @@ HF_BINARIES_REPO = "llamatelemtery/binaries"  # Typo org
 ## Current Status Checklist
 
 - [x] Binaries uploaded to `waqasm86/llamatelemetry-binaries`
-- [x] GitHub Releases v0.1.0 with binaries
+- [x] GitHub Releases v0.1.1 with binaries
 - [x] Installation workflow working
 - [ ] Admin access to `llamatelemetry` organization
 - [ ] Binaries repository under `llamatelemetry` org

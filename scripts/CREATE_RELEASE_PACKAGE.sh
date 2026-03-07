@@ -2,7 +2,7 @@
 ################################################################################
 # Create GitHub Release Package for llamatelemetry
 #
-# Legacy packaging script. llamatelemetry v0.1.0 targets Kaggle dual Tesla T4 only.
+# Legacy packaging script. llamatelemetry v0.1.1 targets Kaggle dual Tesla T4 only.
 # This script may include older multi-target packaging logic.
 #
 # The package will be uploaded to GitHub Releases page (NOT main repo)
@@ -11,7 +11,7 @@
 # Package contents:
 #   - llama-server and tools (compiled for CUDA 12)
 #   - Shared libraries (.so files)
-#   - For v0.1.0, binaries are optimized for Tesla T4 (SM 7.5)
+#   - For v0.1.1, binaries are optimized for Tesla T4 (SM 7.5)
 #
 # Usage:
 #   1. Build llama.cpp with cmake (manually)
@@ -33,7 +33,7 @@ NC='\033[0m'
 PROJECT_ROOT="/media/waqasm86/External1/Project-Nvidia"
 LLAMA_CPP_DIR="${PROJECT_ROOT}/llama.cpp"
 OUTPUT_DIR="${PROJECT_ROOT}/release-packages"
-VERSION="0.1.0"  # Update this for each release
+VERSION="0.1.1"  # Update this for each release
 
 ################################################################################
 # Functions

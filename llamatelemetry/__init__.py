@@ -5,7 +5,7 @@ Streamlined PyTorch-style package with hybrid bootstrap architecture.
 Lightweight Python package with auto-download of CUDA binaries and libraries.
 No manual setup required - just pip install and use!
 
-Version 0.1.0 - Initial release (renamed from llcuda, built on llama.cpp binaries v0.1.0).
+Version 0.1.1 - Initial release (renamed from llcuda, built on llama.cpp binaries v0.1.1).
 
 Examples:
     Basic usage (auto-download model from registry):
@@ -178,7 +178,7 @@ from .utils import (
 )
 from .api import kaggle_t4_dual_config
 
-__version__ = "0.1.0"  # SDK version (binary artifact is llama.cpp v0.1.0)
+__version__ = "0.1.1"  # SDK version (binary artifact is llama.cpp v0.1.1)
 __all__ = [
     # Core classes
     "InferenceEngine",

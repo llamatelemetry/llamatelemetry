@@ -13,7 +13,7 @@ llamatelemetry is a specialized OpenTelemetry SDK designed for observing CUDA-ac
 ```bash
 # Install on Kaggle with GPU T4 × 2
 pip install --no-cache-dir --force-reinstall \
-    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.0
+    git+https://github.com/llamatelemetry/llamatelemetry.git@v0.1.1
 ```
 
 ```python
@@ -58,6 +58,6 @@ MIT License - See [LICENSE](https://github.com/llamatelemetry/llamatelemetry/blo
 
 ---
 
-**Version**: 0.1.0  
+**Version**: 0.1.1  
 **Target**: Kaggle 2× Tesla T4 (CUDA 12.5)  
 **Status**: Active Development
