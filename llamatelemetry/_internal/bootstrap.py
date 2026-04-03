@@ -440,7 +440,7 @@ def download_t4_binaries() -> None:
     print()
 
     # Download T4 binary bundle (HuggingFace primary, GitHub fallback)
-    print("📦 Downloading Kaggle 2× T4 binaries (~961 MB)...")
+    print("📦 Downloading Kaggle 2× T4 binaries (~1.4 GB)...")
     print("    Features: FlashAttention + Tensor Cores + Multi-GPU tensor-split")
     print()
 
